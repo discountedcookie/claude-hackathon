@@ -60,12 +60,12 @@ export default function LoginPage() {
         )}
       </p>
       <form onSubmit={submit} className="flex flex-col gap-3">
-        <input className="rounded-xl border border-cnx-line p-2" placeholder="email" value={email} onChange={(e) => setEmail(e.target.value)} required />
-        <input className="rounded-xl border border-cnx-line p-2" placeholder="password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} required />
+        <input className="cnx-input" placeholder="email" value={email} onChange={(e) => setEmail(e.target.value)} required />
+        <input className="cnx-input" placeholder="password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} required />
         {mode === "signup" && (
           <>
-            <input className="rounded-xl border border-cnx-line p-2" placeholder="display name" value={displayName} onChange={(e) => setDisplayName(e.target.value)} />
-            <input className="rounded-xl border border-cnx-line p-2" placeholder="LINE id (how your match contacts you)" value={lineId} onChange={(e) => setLineId(e.target.value)} />
+            <input className="cnx-input" placeholder="display name" value={displayName} onChange={(e) => setDisplayName(e.target.value)} />
+            <input className="cnx-input" placeholder="LINE id (how your match contacts you)" value={lineId} onChange={(e) => setLineId(e.target.value)} />
             <div className="flex gap-2">
               {(["local", "foreigner"] as const).map((r) => (
                 <button
@@ -80,7 +80,7 @@ export default function LoginPage() {
             </div>
           </>
         )}
-        <button disabled={busy} className="rounded-xl bg-cnx-green p-2 font-semibold text-white disabled:opacity-50">
+        <button disabled={busy} className="cnx-btn w-full">
           {busy ? "…" : mode === "signin" ? "Sign in" : "Sign up"}
         </button>
         {error && <p className="text-sm text-red-600">{error}</p>}

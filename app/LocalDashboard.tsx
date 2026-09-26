@@ -159,7 +159,7 @@ export default function LocalDashboard({ me }: { me: Profile }) {
           <h2 className="mb-2 font-semibold">{t("myMatches")}</h2>
           <ul className="mb-8 space-y-4">
             {myMatches.map((m) => (
-              <li key={m.id} className="rounded-[22px] border border-cnx-line bg-cnx-pale p-5 shadow-sm">
+              <li key={m.id} className="cnx-card bg-cnx-pale">
                 <a href={m.offers?.events?.luma_url} target="_blank" className="font-medium underline">
                   {m.offers?.events?.title}
                 </a>
@@ -177,7 +177,7 @@ export default function LocalDashboard({ me }: { me: Profile }) {
                     )}{" "}
                     — LINE: <b>{matchContacts[m.id]?.line_id ?? "n/a"}</b>
                   </span>
-                  <button onClick={() => cancelMatch(m.id)} className="ml-2 shrink-0 rounded-lg border border-cnx-line px-2 py-1 text-xs">
+                  <button onClick={() => cancelMatch(m.id)} className="ml-2 shrink-0 cnx-btn-light text-xs">
                     {t("cancel")}
                   </button>
                 </div>
@@ -206,7 +206,7 @@ export default function LocalDashboard({ me }: { me: Profile }) {
         {Object.entries(byEvent).map(([eventId, rows]) => {
           const ev = rows[0].events;
           return (
-            <section key={eventId} className="rounded-[22px] border border-cnx-line bg-white p-5 shadow-sm">
+            <section key={eventId} className="cnx-card">
               <a href={ev?.luma_url} target="_blank" className="font-medium underline">
                 {ev?.title}
               </a>
@@ -218,7 +218,7 @@ export default function LocalDashboard({ me }: { me: Profile }) {
               )}
               <div className="mt-3 space-y-2">
                 <input
-                  className="w-full rounded-xl border border-cnx-line p-2 text-sm"
+                  className="cnx-input text-sm"
                   placeholder={t("missionForEvent")}
                   value={missionByEvent[eventId] ?? ""}
                   onChange={(e) => setMissionByEvent((s) => ({ ...s, [eventId]: e.target.value }))}
@@ -229,13 +229,13 @@ export default function LocalDashboard({ me }: { me: Profile }) {
                       with <b>{o.profiles?.display_name}</b>
                       {o.mission && <span className="block italic text-cnx-muted">{o.mission}</span>}
                     </span>
-                    <button onClick={() => claim(o.id, eventId)} className="shrink-0 rounded-xl bg-cnx-green px-3 py-1.5 text-white">
+                    <button onClick={() => claim(o.id, eventId)} className="cnx-btn shrink-0 px-3 py-1.5">
                       {t("pickThem")}
                     </button>
                   </div>
                 ))}
                 {rows.length > 1 && (
-                  <button onClick={() => fit(eventId)} className="w-full rounded-xl border border-cnx-line p-2 text-sm text-cnx-green">
+                  <button onClick={() => fit(eventId)} className="cnx-btn-light w-full text-sm">
                     {t("whoFitsMe")} ({rows.length})
                   </button>
                 )}

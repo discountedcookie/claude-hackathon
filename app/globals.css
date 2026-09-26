@@ -27,6 +27,30 @@
   --font-mono: var(--font-geist-mono);
 }
 
+@layer components {
+  .cnx-card {
+    @apply rounded-[22px] border border-cnx-line bg-white p-5 shadow-[0_8px_32px_#203c3009];
+  }
+  .cnx-input {
+    @apply w-full rounded-xl border border-[#dce5d4] bg-white px-3 py-2.5 text-cnx-ink placeholder:text-[#9aa59b] focus:outline-2 focus:outline-cnx-green;
+  }
+  .cnx-btn {
+    @apply rounded-xl bg-cnx-green px-4 py-2.5 font-semibold text-white transition hover:brightness-105 disabled:opacity-50;
+  }
+  .cnx-btn-light {
+    @apply rounded-xl border border-cnx-line bg-white px-3 py-2 text-cnx-green transition hover:bg-cnx-pale;
+  }
+  .cnx-chip {
+    @apply rounded-xl bg-[#eaf0e6] px-4 py-2.5 text-sm text-[#5f715f] transition hover:bg-[#e3ebdb];
+  }
+  .cnx-chip-active {
+    @apply bg-cnx-green text-white hover:bg-cnx-green;
+  }
+  .cnx-btn-danger {
+    @apply rounded-xl border border-cnx-danger-line bg-cnx-danger-bg px-2 py-1 text-xs text-cnx-danger;
+  }
+}
+
 body {
   background: var(--background);
   color: var(--foreground);

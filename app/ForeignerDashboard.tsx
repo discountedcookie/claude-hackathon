@@ -109,21 +109,21 @@ export default function ForeignerDashboard({ me }: { me: Profile }) {
 
   return (
     <main className="mx-auto max-w-3xl p-4 sm:p-6">
-      <form onSubmit={share} className="mb-8 space-y-2 rounded-[22px] border border-cnx-line bg-white p-5 shadow-sm">
+      <form onSubmit={share} className="mb-8 space-y-2 cnx-card">
         <input
-          className="w-full rounded-xl border border-cnx-line p-2"
+          className="cnx-input"
           placeholder={t("pasteLink")}
           value={url}
           onChange={(e) => setUrl(e.target.value)}
           required
         />
         <input
-          className="w-full rounded-xl border border-cnx-line p-2"
+          className="cnx-input"
           placeholder={t("yourMission")}
           value={mission}
           onChange={(e) => setMission(e.target.value)}
         />
-        <button disabled={busy} className="w-full rounded-xl bg-cnx-green p-2 font-semibold text-white disabled:opacity-50">
+        <button disabled={busy} className="cnx-btn w-full">
           {busy ? "…" : t("offerPlusOne")}
         </button>
       </form>
@@ -134,7 +134,7 @@ export default function ForeignerDashboard({ me }: { me: Profile }) {
         {offers.map((o) => {
           const m = matchFor(o.id);
           return (
-            <li key={o.id} className="rounded-[22px] border border-cnx-line bg-white p-5 shadow-sm">
+            <li key={o.id} className="cnx-card">
               <a href={o.events?.luma_url} target="_blank" className="font-medium underline">
                 {o.events?.title}
               </a>
@@ -150,7 +150,7 @@ export default function ForeignerDashboard({ me }: { me: Profile }) {
                       {m.profiles && <Rating avg={ratings[m.profiles.id]?.avg} count={ratings[m.profiles.id]?.count} />} — LINE:{" "}
                       <b>{m.profiles?.line_id ?? "n/a"}</b>
                     </span>
-                    <button onClick={() => cancelMatch(m.id)} className="ml-2 shrink-0 rounded-lg border border-cnx-line px-2 py-1 text-xs">
+                    <button onClick={() => cancelMatch(m.id)} className="ml-2 shrink-0 cnx-btn-light text-xs">
                       {t("cancelMatch")}
                     </button>
                   </div>
@@ -169,7 +169,7 @@ export default function ForeignerDashboard({ me }: { me: Profile }) {
               ) : (
                 <div className="mt-2 flex items-center justify-between">
                   <p className="text-sm text-cnx-muted">{t("waiting")}</p>
-                  <button onClick={() => cancelOffer(o.id)} className="rounded-lg border border-cnx-line px-2 py-1 text-xs">
+                  <button onClick={() => cancelOffer(o.id)} className="cnx-btn-light text-xs">
                     {t("cancelOffer")}
                   </button>
                 </div>

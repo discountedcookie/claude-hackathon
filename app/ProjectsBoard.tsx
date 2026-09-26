@@ -152,7 +152,7 @@ export default function ProjectsBoard({ me }: { me: Profile }) {
     const accepted = requests.filter((r) => r.project_id === p.id && r.status === "accepted");
     const isOwner = p.owner_id === me.id;
     return (
-      <section key={p.id} className="rounded-[22px] border border-cnx-line bg-white p-5 shadow-sm">
+      <section key={p.id} className="cnx-card">
         <div className="flex items-start justify-between gap-2">
           <div>
             <h3 className="font-semibold">{p.title}</h3>
@@ -162,7 +162,7 @@ export default function ProjectsBoard({ me }: { me: Profile }) {
             </p>
           </div>
           {isOwner && p.status === "open" && (
-            <button onClick={() => closeProject(p.id)} className="shrink-0 rounded-lg border border-cnx-line px-2 py-1 text-xs text-cnx-muted">
+            <button onClick={() => closeProject(p.id)} className="shrink-0 cnx-btn-light text-xs text-cnx-muted">
               {t("closeProject")}
             </button>
           )}
@@ -189,7 +189,7 @@ export default function ProjectsBoard({ me }: { me: Profile }) {
                   )}
                 </span>
                 {myReq.status === "pending" && (
-                  <button onClick={() => cancelRequest(myReq.id)} className="rounded-lg border border-cnx-line px-2 py-1 text-xs">
+                  <button onClick={() => cancelRequest(myReq.id)} className="cnx-btn-light text-xs">
                     {t("cancel")}
                   </button>
                 )}
@@ -197,14 +197,14 @@ export default function ProjectsBoard({ me }: { me: Profile }) {
             ) : (
               <>
                 <input
-                  className="w-full rounded-xl border border-cnx-line p-2 text-sm"
+                  className="cnx-input text-sm"
                   placeholder={t("requestMissionPh")}
                   value={missionByProject[p.id] ?? ""}
                   onChange={(e) => setMissionByProject((s) => ({ ...s, [p.id]: e.target.value }))}
                 />
                 <button
                   onClick={() => requestJoin(p.id)}
-                  className="w-full rounded-xl bg-cnx-green p-2 text-sm font-semibold text-white"
+                  className="w-full cnx-btn w-full text-sm"
                 >
                   {t("requestJoin")}
                 </button>
@@ -228,10 +228,10 @@ export default function ProjectsBoard({ me }: { me: Profile }) {
                   </span>
                   {r.status === "pending" && (
                     <span className="flex shrink-0 gap-1">
-                      <button onClick={() => setRequestStatus(r.id, "accepted")} className="rounded-lg bg-cnx-green px-2 py-1 text-xs text-white">
+                      <button onClick={() => setRequestStatus(r.id, "accepted")} className="cnx-btn px-2 py-1 text-xs">
                         {t("accept")}
                       </button>
-                      <button onClick={() => setRequestStatus(r.id, "declined")} className="rounded-lg bg-cnx-danger-bg border border-cnx-danger-line px-2 py-1 text-xs text-cnx-danger">
+                      <button onClick={() => setRequestStatus(r.id, "declined")} className="cnx-btn-danger">
                         {t("decline")}
                       </button>
                     </span>
@@ -251,29 +251,29 @@ export default function ProjectsBoard({ me }: { me: Profile }) {
           <h1 className="text-xl font-bold">{t("projectsTitle")}</h1>
           <p className="text-sm text-cnx-muted">{t("projectsHint")}</p>
         </div>
-        <button onClick={() => setShowForm((s) => !s)} className="rounded-xl bg-cnx-green px-4 py-2 text-sm font-semibold text-white">
+        <button onClick={() => setShowForm((s) => !s)} className="cnx-btn text-sm">
           + {t("newProject")}
         </button>
       </div>
 
       {showForm && (
-        <form onSubmit={createProject} className="mb-6 space-y-2 rounded-[22px] border border-cnx-line bg-white p-5 shadow-sm">
-          <input className="w-full rounded-xl border border-cnx-line p-2" placeholder={t("projectTitlePh")} value={title} onChange={(e) => setTitle(e.target.value)} required />
-          <textarea className="w-full rounded-xl border border-cnx-line p-2" rows={2} placeholder={t("projectDescPh")} value={desc} onChange={(e) => setDesc(e.target.value)} />
-          <input className="w-full rounded-xl border border-cnx-line p-2" placeholder={t("lookingForPh")} value={lookingFor} onChange={(e) => setLookingFor(e.target.value)} />
+        <form onSubmit={createProject} className="mb-6 space-y-2 cnx-card">
+          <input className="cnx-input" placeholder={t("projectTitlePh")} value={title} onChange={(e) => setTitle(e.target.value)} required />
+          <textarea className="cnx-input" rows={2} placeholder={t("projectDescPh")} value={desc} onChange={(e) => setDesc(e.target.value)} />
+          <input className="cnx-input" placeholder={t("lookingForPh")} value={lookingFor} onChange={(e) => setLookingFor(e.target.value)} />
           <div className="flex gap-2">
             {(["social", "build", "local_life"] as const).map((c) => (
               <button
-                key={c}
-                type="button"
-                onClick={() => setCategory(c)}
-                className={`flex-1 rounded-xl border p-2 text-sm ${category === c ? "bg-cnx-green text-white border-cnx-green" : "border-cnx-line text-cnx-muted"}`}
-              >
+                  key={c}
+                  type="button"
+                  onClick={() => setCategory(c)}
+                  className={`cnx-chip flex-1 ${category === c ? "cnx-chip-active" : ""}`}
+                >
                 {catLabel[c]}
               </button>
             ))}
           </div>
-          <button disabled={busy} className="w-full rounded-xl bg-cnx-green p-2 font-semibold text-white disabled:opacity-50">
+          <button disabled={busy} className="cnx-btn w-full">
             {busy ? "…" : t("newProject")}
           </button>
         </form>

@@ -102,7 +102,7 @@ export default function MatchReview({
         ))}
       </div>
       <textarea
-        className="w-full rounded-xl border border-cnx-line p-1 text-xs"
+        className="cnx-input text-xs"
         rows={2}
         placeholder={`${t("howWas")} ${other.display_name}? (optional)`}
         value={text}
@@ -112,14 +112,14 @@ export default function MatchReview({
         <button
           disabled={busy || !stars}
           onClick={() => submit(stars, false)}
-          className="rounded-lg bg-cnx-green px-2 py-1 text-xs text-white disabled:opacity-40"
+          className="cnx-btn px-2 py-1 text-xs"
         >
           {t("leaveReview")}
         </button>
         <button
           disabled={busy}
           onClick={() => submit(1, true)}
-          className="rounded-lg border border-cnx-danger-line bg-cnx-danger-bg px-2 py-1 text-xs text-cnx-danger"
+          className="cnx-btn-danger"
         >
           {t("noShowBtn")}
         </button>

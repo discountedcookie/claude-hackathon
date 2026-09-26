@@ -48,7 +48,7 @@ export default function BuddyMascot({ className = "" }: { className?: string }) 
         fill="none"
         aria-hidden
         focusable="false"
-        className="h-full w-full"
+        className="absolute inset-0 h-full w-full"
       >
         <ellipse cx="166" cy="211" rx="113" ry="9" fill="#485747" opacity=".07" />
         <ellipse cx="167" cy="211" rx="78" ry="5" fill="#485747" opacity=".055" />
