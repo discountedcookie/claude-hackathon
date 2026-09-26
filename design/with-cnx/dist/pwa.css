@@ -1,0 +1,18 @@
+.pwa-install{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:44px;max-width:50%;padding:7px 11px;background:#fff;border:1px solid #dce5d9;border-radius:12px;color:#285c48;font-size:12px;line-height:1.4;text-align:left;flex-shrink:0;box-shadow:0 2px 6px #203c3005}
+.pwa-install>svg{width:18px;height:18px;flex:0 0 18px}
+.pwa-install .en{font-size:10px;color:#647769}
+.pwa-install:hover{background:#eef3e8}
+.pwa-hero{display:flex;align-items:center;gap:18px;margin-bottom:26px}
+.pwa-hero img{border-radius:20px;flex-shrink:0;box-shadow:0 6px 15px #285c4820}
+.pwa-hero p{margin:0;font-size:20px;line-height:1.4;font-weight:550}
+.pwa-hero .en{font-size:14px}
+.pwa-platform{font-size:12px;color:#748074;letter-spacing:.08em;font-weight:650}
+.pwa-steps{font-size:18px;line-height:1.65;margin:7px 0 12px}
+.pwa-steps .en{font-size:14px}
+.pwa-caption{font-size:12px;color:#718075;margin:10px 0 20px;line-height:1.6}
+.pwa-info{background:#f3f6ee;border:1px solid #e7eddf;border-radius:16px;padding:16px 18px;margin-top:22px}
+.pwa-info p{font-size:12px;margin:10px 0 0;color:#6b7d6c;line-height:1.6}
+.pwa-info p:first-child{margin:0;color:#285c48;font-weight:600}
+.pwa-info [data-state="ready"]::before{content:'✓';margin-right:7px;color:#285c48}
+body[data-lang="both"] .pwa-install .en{display:block}
+@media(max-width:700px){.demo-bar{align-items:center;gap:8px}.demo-label{align-items:flex-start}.demo-label #storage-status .zh,.demo-label #storage-status .en{display:block;margin-left:0}.pwa-install{font-size:11px;padding:7px 9px;gap:6px}.pwa-install .en{font-size:9px}.pwa-hero{gap:15px}.pwa-hero p{font-size:18px}}
