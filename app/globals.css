@@ -33,3 +33,24 @@ body {
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
   -webkit-font-smoothing: antialiased;
 }
+
+.buddy-wave { transform-box: fill-box; transform-origin: 50% 85%; }
+.buddy-peek { transform-box: fill-box; transform-origin: 50% 90%; transition: transform .3s; }
+.buddy-eyes { transform-box: fill-box; transform-origin: center; }
+.buddy-spark { transform-box: fill-box; transform-origin: center; }
+.buddy-mascot.is-greeting .buddy-wave, .buddy-mascot.is-greeting .buddy-eyes {
+  animation: buddy-wave 1.05s ease-in-out both;
+}
+.buddy-mascot.is-greeting .buddy-eyes { animation-name: buddy-blink; }
+.buddy-mascot.is-greeting .buddy-peek { animation: buddy-nod 1.05s ease both; }
+.buddy-mascot.is-greeting .buddy-spark { animation: buddy-spark .65s .12s ease both; }
+@media (hover: hover) { .buddy-mascot:hover .buddy-peek { transform: rotate(4deg); } }
+
+@keyframes buddy-wave { 0%,100% { transform: rotate(0) } 20% { transform: rotate(-17deg) } 40% { transform: rotate(12deg) } 60% { transform: rotate(-13deg) } 80% { transform: rotate(7deg) } }
+@keyframes buddy-blink { 0%,35%,48%,100% { transform: scaleY(1) } 40% { transform: scaleY(.1) } }
+@keyframes buddy-nod { 0%,100% { transform: rotate(0) } 40% { transform: rotate(5deg) } 70% { transform: rotate(-3deg) } }
+@keyframes buddy-spark { 0% { transform: scale(.5); opacity: .2 } 60% { transform: scale(1.12); opacity: 1 } 100% { transform: scale(1); opacity: 1 } }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; }
+}

@@ -1,12 +1,10 @@
 "use client";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
+import Link from "next/link";
+import { ReactNode } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { LangProvider, LangSwitcher, useT, Lang } from "@/lib/i18n";
-import ProjectsBoard from "./ProjectsBoard";
-import ForeignerDashboard from "./ForeignerDashboard";
-import LocalDashboard from "./LocalDashboard";
 
 type Profile = {
   id: string;
@@ -16,11 +14,11 @@ type Profile = {
   language: Lang;
 };
 
-function ShellInner({ me }: { me: Profile }) {
+function FrameInner({ me, children }: { me: Profile; children: ReactNode }) {
   const t = useT();
   const router = useRouter();
+  const pathname = usePathname();
   const supabase = createClient();
-  const [tab, setTab] = useState<"events" | "projects">("events");
 
   async function signOut() {
     await supabase.auth.signOut();
@@ -32,21 +30,28 @@ function ShellInner({ me }: { me: Profile }) {
     <div className="min-h-screen bg-cnx-paper text-cnx-ink">
       <header className="sticky top-0 z-10 border-b border-cnx-line bg-white/90 backdrop-blur">
         <div className="mx-auto flex max-w-3xl items-center gap-3 px-4 py-3">
-          <span className="text-lg font-extrabold tracking-tight">
+          <Link href="/events" className="text-lg font-extrabold tracking-tight">
             With · CNX
             <span className="ml-2 hidden text-xs font-medium text-cnx-muted sm:inline">{t("brandTag")}</span>
-          </span>
+          </Link>
           <nav className="ml-auto flex items-center gap-1">
-            {(["events", "projects"] as const).map((k) => (
-              <button
-                key={k}
-                onClick={() => setTab(k)}
+            {(
+              [
+                { href: "/events", label: t("tabEvents") },
+                { href: "/projects", label: t("tabProjects") },
+              ] as const
+            ).map(({ href, label }) => (
+              <Link
+                key={href}
+                href={href}
                 className={`rounded-xl px-3 py-2 text-sm ${
-                  tab === k ? "font-semibold text-cnx-green underline underline-offset-8 decoration-2" : "text-cnx-muted"
+                  pathname.startsWith(href)
+                    ? "font-semibold text-cnx-green underline decoration-2 underline-offset-8"
+                    : "text-cnx-muted"
                 }`}
               >
-                {k === "events" ? t("tabEvents") : t("tabProjects")}
-              </button>
+                {label}
+              </Link>
             ))}
           </nav>
           <LangSwitcher />
@@ -58,23 +63,15 @@ function ShellInner({ me }: { me: Profile }) {
           </button>
         </div>
       </header>
-      {tab === "events" ? (
-        me.role === "foreigner" ? (
-          <ForeignerDashboard me={me} />
-        ) : (
-          <LocalDashboard me={me} />
-        )
-      ) : (
-        <ProjectsBoard me={me} />
-      )}
+      {children}
     </div>
   );
 }
 
-export default function Shell({ me }: { me: Profile }) {
+export default function AppFrame({ me, children }: { me: Profile; children: ReactNode }) {
   return (
     <LangProvider initial={me.language} userId={me.id}>
-      <ShellInner me={me} />
+      <FrameInner me={me}>{children}</FrameInner>
     </LangProvider>
   );
 }

@@ -9,6 +9,11 @@ type Dict = Record<string, Record<Lang, string>>;
 
 export const strings: Dict = {
   brandTag: { en: "Find your buddy", th: "หาเพื่อนไปด้วยกัน", zh: "找个伴，一起去" },
+  heroTitle: { en: "Find your event buddy.", th: "หาเพื่อนไปงานด้วยกัน", zh: "找个伴，一起去。" },
+  heroNote: { en: "Your first time feels easier with a buddy.", th: "ไปครั้งแรกก็อุ่นใจ เมื่อมีเพื่อนไปด้วย", zh: "第一次参加？有人陪你一起。" },
+  heroProjectsTitle: { en: "Build something, together.", th: "มาสร้างอะไรด้วยกัน", zh: "一起做点什么。" },
+  heroProjectsNote: { en: "Free collaboration — no money, just people and a project.", th: "ร่วมมือกันแบบไม่มีค่าจ้าง", zh: "免费协作——没有钱，只有人和项目。" },
+  sayHi: { en: "Say hi to your buddies", th: "ทักทายเพื่อนของคุณ", zh: "和小伙伴打个招呼" },
   tabEvents: { en: "Events", th: "กิจกรรม", zh: "活动" },
   tabProjects: { en: "Projects", th: "โปรเจกต์", zh: "项目" },
   signOut: { en: "Sign out", th: "ออกจากระบบ", zh: "退出" },

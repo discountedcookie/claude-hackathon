@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
+import BuddyMascot from "../BuddyMascot";
 
 export default function LoginPage() {
   const supabase = createClient();
@@ -49,6 +50,7 @@ export default function LoginPage() {
 
   return (
     <main className="mx-auto flex min-h-screen max-w-sm flex-col justify-center gap-4 p-6">
+      <BuddyMascot className="mx-auto h-28 w-40" />
       <h1 className="text-2xl font-extrabold tracking-tight">With · CNX</h1>
       <p className="text-sm text-gray-500">
         {mode === "signin" ? "Sign in" : "Create account"} — {mode === "signin" ? (
