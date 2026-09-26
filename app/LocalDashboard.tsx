@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
+import MatchReview, { Review, Rating } from "./MatchReview";
 
 type Profile = { id: string; display_name: string; line_id: string | null; role: string };
 type OfferRow = {
@@ -30,7 +31,9 @@ export default function LocalDashboard({ me }: { me: Profile }) {
   const supabase = createClient();
   const [offers, setOffers] = useState<OfferRow[]>([]);
   const [myMatches, setMyMatches] = useState<MatchRow[]>([]);
-  const [matchContacts, setMatchContacts] = useState<Record<string, { display_name: string; line_id: string | null }>>({});
+  const [matchContacts, setMatchContacts] = useState<Record<string, { id: string; display_name: string; line_id: string | null }>>({});
+  const [reviews, setReviews] = useState<Review[]>([]);
+  const [ratings, setRatings] = useState<Record<string, { avg: number; count: number }>>({});
   const [notice, setNotice] = useState<string | null>(null);
   const [missionByEvent, setMissionByEvent] = useState<Record<string, string>>({});
 
@@ -48,19 +51,38 @@ export default function LocalDashboard({ me }: { me: Profile }) {
     const rows = (m as unknown as MatchRow[]) ?? [];
     setMyMatches(rows);
 
-    const contacts: Record<string, { display_name: string; line_id: string | null }> = {};
+    const contacts: Record<string, { id: string; display_name: string; line_id: string | null }> = {};
     for (const row of rows) {
       const fid = row.offers?.foreigner_id;
       if (fid) {
         const { data: p } = await supabase
           .from("profiles")
-          .select("display_name, line_id")
+          .select("id, display_name, line_id")
           .eq("id", fid)
           .single();
         if (p) contacts[row.id] = p;
       }
     }
     setMatchContacts(contacts);
+
+    const peerIds = Object.values(contacts).map((c) => c.id);
+    if (peerIds.length) {
+      const { data: rv } = await supabase
+        .from("reviews")
+        .select("*")
+        .or(`reviewee_id.in.(${peerIds.join(",")}),reviewee_id.eq.${me.id}`);
+      const revRows = (rv as Review[]) ?? [];
+      setReviews(revRows);
+      const agg: Record<string, { sum: number; count: number }> = {};
+      for (const r of revRows) {
+        const a = (agg[r.reviewee_id] ??= { sum: 0, count: 0 });
+        a.sum += r.stars;
+        a.count += 1;
+      }
+      setRatings(
+        Object.fromEntries(Object.entries(agg).map(([id, a]) => [id, { avg: a.sum / a.count, count: a.count }])),
+      );
+    }
   }, [supabase, me.id]);
 
   useEffect(() => {
@@ -136,13 +158,30 @@ export default function LocalDashboard({ me }: { me: Profile }) {
                 </p>
                 <div className="mt-1 flex items-center justify-between text-sm">
                   <span>
-                    Your host: <b>{matchContacts[m.id]?.display_name}</b> — LINE:{" "}
-                    <b>{matchContacts[m.id]?.line_id ?? "n/a"}</b>
+                    Your host: <b>{matchContacts[m.id]?.display_name}</b>
+                    {matchContacts[m.id] && (
+                      <Rating
+                        avg={ratings[matchContacts[m.id].id]?.avg}
+                        count={ratings[matchContacts[m.id].id]?.count}
+                      />
+                    )}{" "}
+                    — LINE: <b>{matchContacts[m.id]?.line_id ?? "n/a"}</b>
                   </span>
                   <button onClick={() => cancelMatch(m.id)} className="ml-2 shrink-0 rounded border px-2 py-1 text-xs">
                     Cancel
                   </button>
                 </div>
+                {matchContacts[m.id] && (
+                  <MatchReview
+                    matchId={m.id}
+                    meId={me.id}
+                    other={{ id: matchContacts[m.id].id, display_name: matchContacts[m.id].display_name }}
+                    eventStarted={!!m.offers?.events?.starts_at && new Date(m.offers.events.starts_at) < new Date()}
+                    myReview={reviews.find((r) => r.match_id === m.id && r.reviewer_id === me.id) ?? null}
+                    theirReview={reviews.find((r) => r.match_id === m.id && r.reviewer_id === matchContacts[m.id].id) ?? null}
+                    onDone={load}
+                  />
+                )}
               </li>
             ))}
           </ul>

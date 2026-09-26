@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
+import MatchReview, { Review, Rating } from "./MatchReview";
 
 type Profile = { id: string; display_name: string; line_id: string | null; role: string };
 type OfferRow = {
@@ -19,8 +20,15 @@ export default function ForeignerDashboard({ me }: { me: Profile }) {
   const [message, setMessage] = useState<string | null>(null);
   const [offers, setOffers] = useState<OfferRow[]>([]);
   const [matches, setMatches] = useState<
-    { id: string; offer_id: string; profiles: { display_name: string; line_id: string | null } | null }[]
+    {
+      id: string;
+      offer_id: string;
+      profiles: { id: string; display_name: string; line_id: string | null } | null;
+      offers: { events: { starts_at: string | null } | null } | null;
+    }[]
   >([]);
+  const [reviews, setReviews] = useState<Review[]>([]);
+  const [ratings, setRatings] = useState<Record<string, { avg: number; count: number }>>({});
 
   const load = useCallback(async () => {
     const { data } = await supabase
@@ -32,9 +40,31 @@ export default function ForeignerDashboard({ me }: { me: Profile }) {
 
     const { data: m } = await supabase
       .from("matches")
-      .select("id, offer_id, offers!inner(foreigner_id), profiles:local_id(display_name, line_id)")
+      .select("id, offer_id, offers!inner(foreigner_id, events(starts_at)), profiles:local_id(id, display_name, line_id)")
       .eq("offers.foreigner_id", me.id);
-    setMatches((m as never) ?? []);
+    const matchRows = (m as never) ?? [];
+    setMatches(matchRows);
+
+    const peerIds = (matchRows as { profiles: { id: string } | null }[])
+      .map((r) => r.profiles?.id)
+      .filter(Boolean) as string[];
+    if (peerIds.length) {
+      const { data: rv } = await supabase
+        .from("reviews")
+        .select("*")
+        .or(`reviewee_id.in.(${peerIds.join(",")}),reviewee_id.eq.${me.id}`);
+      const rows = (rv as Review[]) ?? [];
+      setReviews(rows);
+      const agg: Record<string, { sum: number; count: number }> = {};
+      for (const r of rows) {
+        const a = (agg[r.reviewee_id] ??= { sum: 0, count: 0 });
+        a.sum += r.stars;
+        a.count += 1;
+      }
+      setRatings(
+        Object.fromEntries(Object.entries(agg).map(([id, a]) => [id, { avg: a.sum / a.count, count: a.count }])),
+      );
+    }
   }, [supabase, me.id]);
 
   useEffect(() => {
@@ -116,13 +146,28 @@ export default function ForeignerDashboard({ me }: { me: Profile }) {
               </p>
               {o.mission && <p className="mt-1 text-sm italic text-gray-600">{o.mission}</p>}
               {m ? (
-                <div className="mt-2 flex items-center justify-between rounded bg-green-50 p-2 text-sm">
-                  <span>
-                    Matched with <b>{m.profiles?.display_name}</b> — LINE: <b>{m.profiles?.line_id ?? "n/a"}</b>
-                  </span>
-                  <button onClick={() => cancelMatch(m.id)} className="ml-2 shrink-0 rounded border px-2 py-1 text-xs">
-                    Cancel match
-                  </button>
+                <div className="mt-2 rounded bg-green-50 p-2 text-sm">
+                  <div className="flex items-center justify-between">
+                    <span>
+                      Matched with <b>{m.profiles?.display_name}</b>
+                      {m.profiles && <Rating avg={ratings[m.profiles.id]?.avg} count={ratings[m.profiles.id]?.count} />} — LINE:{" "}
+                      <b>{m.profiles?.line_id ?? "n/a"}</b>
+                    </span>
+                    <button onClick={() => cancelMatch(m.id)} className="ml-2 shrink-0 rounded border px-2 py-1 text-xs">
+                      Cancel match
+                    </button>
+                  </div>
+                  {m.profiles && o.events && (
+                    <MatchReview
+                      matchId={m.id}
+                      meId={me.id}
+                      other={{ id: m.profiles.id, display_name: m.profiles.display_name }}
+                      eventStarted={!!m.offers?.events?.starts_at && new Date(m.offers.events.starts_at) < new Date()}
+                      myReview={reviews.find((r) => r.match_id === m.id && r.reviewer_id === me.id) ?? null}
+                      theirReview={reviews.find((r) => r.match_id === m.id && r.reviewer_id === m.profiles!.id) ?? null}
+                      onDone={load}
+                    />
+                  )}
                 </div>
               ) : (
                 <div className="mt-2 flex items-center justify-between">
