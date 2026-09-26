@@ -1,6 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import { normalizeLumaUrl, fetchLumaEvent } from "@/lib/luma";
-import { generateThaiDescription } from "@/lib/thai";
+import { generateSummaries } from "@/lib/summaries";
 
 export async function POST(request: Request) {
   const supabase = await createClient();
@@ -57,16 +57,22 @@ export async function POST(request: Request) {
 
   if (!event.description_th) {
     try {
-      const description_th = await generateThaiDescription({
+      const s = await generateSummaries({
+        kind: "event",
         title: event.title,
         description: event.description_en,
-        starts_at: event.starts_at,
-        location: event.location,
+        extra: `${event.location ?? ""} ${event.starts_at ?? ""}`,
       });
-      await supabase.from("events").update({ description_th }).eq("id", event.id);
-      event.description_th = description_th;
+      if (s) {
+        event.description_th = s.th;
+        event.description_zh = s.zh;
+        await supabase
+          .from("events")
+          .update({ description_th: s.th, description_zh: s.zh })
+          .eq("id", event.id);
+      }
     } catch {
-      // non-fatal: Thai description can be backfilled later
+      // non-fatal: summaries can be backfilled later
     }
   }
 

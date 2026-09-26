@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
+import { useT } from "@/lib/i18n";
 
 export type Review = {
   id: string;
@@ -20,7 +21,7 @@ export function Stars({ n }: { n: number }) {
 export function Rating({ avg, count }: { avg?: number; count?: number }) {
   if (!count || avg === undefined) return null;
   return (
-    <span className="ml-1 text-xs text-gray-500">
+    <span className="ml-1 text-xs text-cnx-muted">
       {avg.toFixed(1)}★ ({count})
     </span>
   );
@@ -44,6 +45,7 @@ export default function MatchReview({
   onDone: () => void;
 }) {
   const supabase = createClient();
+  const t = useT();
   const [stars, setStars] = useState(0);
   const [text, setText] = useState("");
   const [busy, setBusy] = useState(false);
@@ -64,24 +66,24 @@ export default function MatchReview({
   }
 
   if (!eventStarted)
-    return <p className="text-xs text-gray-400">Reviews unlock once the event starts.</p>;
+    return <p className="text-xs text-cnx-muted">{t("reviewsLocked")}</p>;
 
   if (myReview)
     return (
-      <div className="text-xs text-gray-600">
+      <div className="text-xs text-cnx-muted">
         <p>
-          You gave: <Stars n={myReview.stars} />
-          {myReview.auto_no_show && " (marked as no-show)"}
+          {t("youGave")}: <Stars n={myReview.stars} />
+          {myReview.auto_no_show && ` ${t("noShowMark")}`}
           {myReview.text && ` — “${myReview.text}”`}
         </p>
         {theirReview ? (
           <p>
-            {other.display_name} gave you: <Stars n={theirReview.stars} />
-            {theirReview.auto_no_show && " (marked as no-show)"}
+            {other.display_name} {t("gaveYou")}: <Stars n={theirReview.stars} />
+            {theirReview.auto_no_show && ` ${t("noShowMark")}`}
             {theirReview.text && ` — “${theirReview.text}”`}
           </p>
         ) : (
-          <p className="text-gray-400">{other.display_name} hasn&apos;t reviewed yet.</p>
+          <p className="text-cnx-muted/70">{other.display_name} {t("hasntReviewed")}</p>
         )}
       </div>
     );
@@ -100,9 +102,9 @@ export default function MatchReview({
         ))}
       </div>
       <textarea
-        className="w-full rounded border p-1 text-xs"
+        className="w-full rounded-xl border border-cnx-line p-1 text-xs"
         rows={2}
-        placeholder={`How was ${other.display_name}? (optional)`}
+        placeholder={`${t("howWas")} ${other.display_name}? (optional)`}
         value={text}
         onChange={(e) => setText(e.target.value)}
       />
@@ -110,16 +112,16 @@ export default function MatchReview({
         <button
           disabled={busy || !stars}
           onClick={() => submit(stars, false)}
-          className="rounded bg-black px-2 py-1 text-xs text-white disabled:opacity-40"
+          className="rounded-lg bg-cnx-green px-2 py-1 text-xs text-white disabled:opacity-40"
         >
-          Leave review
+          {t("leaveReview")}
         </button>
         <button
           disabled={busy}
           onClick={() => submit(1, true)}
-          className="rounded border border-red-300 px-2 py-1 text-xs text-red-600"
+          className="rounded-lg border border-cnx-danger-line bg-cnx-danger-bg px-2 py-1 text-xs text-cnx-danger"
         >
-          They didn&apos;t show up
+          {t("noShowBtn")}
         </button>
       </div>
     </div>

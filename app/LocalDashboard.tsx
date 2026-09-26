@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import MatchReview, { Review, Rating } from "./MatchReview";
+import { useLang, useT, Lang } from "@/lib/i18n";
 
 type Profile = { id: string; display_name: string; line_id: string | null; role: string };
 type OfferRow = {
@@ -12,7 +13,9 @@ type OfferRow = {
   events: {
     id: string;
     title: string;
+    description: string | null;
     description_th: string | null;
+    description_zh: string | null;
     starts_at: string | null;
     location: string | null;
     luma_url: string;
@@ -27,8 +30,20 @@ type MatchRow = {
   } | null;
 };
 
+function localized(
+  ev: { description: string | null; description_th: string | null; description_zh: string | null } | null,
+  lang: Lang,
+): string | null {
+  if (!ev) return null;
+  if (lang === "th") return ev.description_th ?? ev.description;
+  if (lang === "zh") return ev.description_zh ?? ev.description;
+  return ev.description;
+}
+
 export default function LocalDashboard({ me }: { me: Profile }) {
   const supabase = createClient();
+  const t = useT();
+  const { lang } = useLang();
   const [offers, setOffers] = useState<OfferRow[]>([]);
   const [myMatches, setMyMatches] = useState<MatchRow[]>([]);
   const [matchContacts, setMatchContacts] = useState<Record<string, { id: string; display_name: string; line_id: string | null }>>({});
@@ -40,7 +55,7 @@ export default function LocalDashboard({ me }: { me: Profile }) {
   const load = useCallback(async () => {
     const { data } = await supabase
       .from("offers")
-      .select("id, status, mission, events(id, title, description_th, starts_at, location, luma_url), profiles:foreigner_id(display_name)")
+      .select("id, status, mission, events(id, title, description, description_th, description_zh, starts_at, location, luma_url), profiles:foreigner_id(display_name)")
       .eq("status", "open");
     setOffers((data as unknown as OfferRow[]) ?? []);
 
@@ -109,12 +124,12 @@ export default function LocalDashboard({ me }: { me: Profile }) {
       local_id: me.id,
       local_mission: missionByEvent[eventId] || null,
     });
-    setNotice(error ? "Too slow — someone just took that one." : "Matched! Check above for their LINE id.");
+    setNotice(error ? t("tooSlow") : t("matchedNotice"));
     load();
   }
 
   async function fit(eventId: string) {
-    setNotice("Asking who fits you best…");
+    setNotice(t("askingAI"));
     const res = await fetch("/api/match-suggest", {
       method: "POST",
       headers: { "content-type": "application/json" },
@@ -125,7 +140,7 @@ export default function LocalDashboard({ me }: { me: Profile }) {
       setNotice(body.error ?? "Could not suggest a match.");
       return;
     }
-    setNotice(`Picked for you: ${body.reason}`);
+    setNotice(`${t("pickedForYou")}: ${body.reason}`);
     claim(body.offer_id, eventId);
   }
 
@@ -136,29 +151,24 @@ export default function LocalDashboard({ me }: { me: Profile }) {
   }, {});
 
   return (
-    <main className="mx-auto max-w-lg p-6">
-      <header className="mb-6 flex items-center justify-between">
-        <h1 className="text-xl font-bold">Plus One</h1>
-        <span className="text-sm text-gray-500">{me.display_name} · local</span>
-      </header>
-
-      {notice && <p className="mb-4 rounded bg-blue-50 p-2 text-sm">{notice}</p>}
+    <main className="mx-auto max-w-3xl p-4 sm:p-6">
+      {notice && <p className="mb-4 rounded-xl bg-cnx-lime/50 p-2 text-sm">{notice}</p>}
 
       {myMatches.length > 0 && (
         <>
-          <h2 className="mb-2 font-semibold">My matches</h2>
-          <ul className="mb-8 space-y-3">
+          <h2 className="mb-2 font-semibold">{t("myMatches")}</h2>
+          <ul className="mb-8 space-y-4">
             {myMatches.map((m) => (
-              <li key={m.id} className="rounded border border-green-300 bg-green-50 p-3">
+              <li key={m.id} className="rounded-[22px] border border-cnx-line bg-cnx-pale p-5 shadow-sm">
                 <a href={m.offers?.events?.luma_url} target="_blank" className="font-medium underline">
                   {m.offers?.events?.title}
                 </a>
-                <p className="text-sm text-gray-600">
+                <p className="text-sm text-cnx-muted">
                   {m.offers?.events?.starts_at ? new Date(m.offers.events.starts_at).toLocaleString() : ""}
                 </p>
                 <div className="mt-1 flex items-center justify-between text-sm">
                   <span>
-                    Your host: <b>{matchContacts[m.id]?.display_name}</b>
+                    {t("yourHost")}: <b>{matchContacts[m.id]?.display_name}</b>
                     {matchContacts[m.id] && (
                       <Rating
                         avg={ratings[matchContacts[m.id].id]?.avg}
@@ -167,8 +177,8 @@ export default function LocalDashboard({ me }: { me: Profile }) {
                     )}{" "}
                     — LINE: <b>{matchContacts[m.id]?.line_id ?? "n/a"}</b>
                   </span>
-                  <button onClick={() => cancelMatch(m.id)} className="ml-2 shrink-0 rounded border px-2 py-1 text-xs">
-                    Cancel
+                  <button onClick={() => cancelMatch(m.id)} className="ml-2 shrink-0 rounded-lg border border-cnx-line px-2 py-1 text-xs">
+                    {t("cancel")}
                   </button>
                 </div>
                 {matchContacts[m.id] && (
@@ -188,28 +198,28 @@ export default function LocalDashboard({ me }: { me: Profile }) {
         </>
       )}
 
-      <h2 className="mb-2 font-semibold">Events with a free plus one</h2>
+      <h2 className="mb-2 font-semibold">{t("eventsWithPlusOne")}</h2>
       {Object.keys(byEvent).length === 0 && (
-        <p className="text-sm text-gray-400">Nothing yet — check back soon.</p>
+        <p className="text-sm text-cnx-muted">{t("nothingYet")}</p>
       )}
       <div className="space-y-4">
         {Object.entries(byEvent).map(([eventId, rows]) => {
           const ev = rows[0].events;
           return (
-            <section key={eventId} className="rounded border p-3">
+            <section key={eventId} className="rounded-[22px] border border-cnx-line bg-white p-5 shadow-sm">
               <a href={ev?.luma_url} target="_blank" className="font-medium underline">
                 {ev?.title}
               </a>
-              <p className="text-sm text-gray-500">
+              <p className="text-sm text-cnx-muted">
                 {ev?.starts_at ? new Date(ev.starts_at).toLocaleString() : "date TBD"} · {ev?.location ?? "venue TBD"}
               </p>
-              {ev?.description_th && (
-                <p className="mt-2 whitespace-pre-line rounded bg-amber-50 p-2 text-sm">{ev.description_th}</p>
+              {localized(ev, lang) && (
+                <p className="mt-2 whitespace-pre-line rounded-xl bg-cnx-pale p-3 text-sm">{localized(ev, lang)}</p>
               )}
               <div className="mt-3 space-y-2">
                 <input
-                  className="rounded border p-1 text-sm"
-                  placeholder="your mission for this event — why are you going?"
+                  className="w-full rounded-xl border border-cnx-line p-2 text-sm"
+                  placeholder={t("missionForEvent")}
                   value={missionByEvent[eventId] ?? ""}
                   onChange={(e) => setMissionByEvent((s) => ({ ...s, [eventId]: e.target.value }))}
                 />
@@ -217,16 +227,16 @@ export default function LocalDashboard({ me }: { me: Profile }) {
                   <div key={o.id} className="flex items-center justify-between gap-2 text-sm">
                     <span>
                       with <b>{o.profiles?.display_name}</b>
-                      {o.mission && <span className="block italic text-gray-500">{o.mission}</span>}
+                      {o.mission && <span className="block italic text-cnx-muted">{o.mission}</span>}
                     </span>
-                    <button onClick={() => claim(o.id, eventId)} className="shrink-0 rounded bg-black px-3 py-1 text-white">
-                      Pick them
+                    <button onClick={() => claim(o.id, eventId)} className="shrink-0 rounded-xl bg-cnx-green px-3 py-1.5 text-white">
+                      {t("pickThem")}
                     </button>
                   </div>
                 ))}
                 {rows.length > 1 && (
-                  <button onClick={() => fit(eventId)} className="w-full rounded border p-1 text-sm">
-                    Who fits me? (AI picks from {rows.length})
+                  <button onClick={() => fit(eventId)} className="w-full rounded-xl border border-cnx-line p-2 text-sm text-cnx-green">
+                    {t("whoFitsMe")} ({rows.length})
                   </button>
                 )}
               </div>

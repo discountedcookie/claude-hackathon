@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import MatchReview, { Review, Rating } from "./MatchReview";
+import { useT } from "@/lib/i18n";
 
 type Profile = { id: string; display_name: string; line_id: string | null; role: string };
 type OfferRow = {
@@ -14,6 +15,7 @@ type OfferRow = {
 
 export default function ForeignerDashboard({ me }: { me: Profile }) {
   const supabase = createClient();
+  const t = useT();
   const [url, setUrl] = useState("");
   const [mission, setMission] = useState("");
   const [busy, setBusy] = useState(false);
@@ -106,55 +108,50 @@ export default function ForeignerDashboard({ me }: { me: Profile }) {
   }
 
   return (
-    <main className="mx-auto max-w-lg p-6">
-      <header className="mb-6 flex items-center justify-between">
-        <h1 className="text-xl font-bold">Plus One</h1>
-        <span className="text-sm text-gray-500">{me.display_name} · foreigner</span>
-      </header>
-
-      <form onSubmit={share} className="mb-8 flex flex-col gap-2">
+    <main className="mx-auto max-w-3xl p-4 sm:p-6">
+      <form onSubmit={share} className="mb-8 space-y-2 rounded-[22px] border border-cnx-line bg-white p-5 shadow-sm">
         <input
-          className="rounded border p-2"
-          placeholder="paste a lu.ma event link"
+          className="w-full rounded-xl border border-cnx-line p-2"
+          placeholder={t("pasteLink")}
           value={url}
           onChange={(e) => setUrl(e.target.value)}
           required
         />
         <input
-          className="rounded border p-2"
-          placeholder="your mission — why are you going? (e.g. want to meet the Thai dev scene, happy to demo Claude)"
+          className="w-full rounded-xl border border-cnx-line p-2"
+          placeholder={t("yourMission")}
           value={mission}
           onChange={(e) => setMission(e.target.value)}
         />
-        <button disabled={busy} className="rounded bg-black p-2 text-white disabled:opacity-50">
-          {busy ? "…" : "Offer plus one"}
+        <button disabled={busy} className="w-full rounded-xl bg-cnx-green p-2 font-semibold text-white disabled:opacity-50">
+          {busy ? "…" : t("offerPlusOne")}
         </button>
       </form>
-      {message && <p className="mb-4 text-sm">{message}</p>}
+      {message && <p className="mb-4 rounded-xl bg-cnx-lime/50 p-2 text-sm">{message}</p>}
 
-      <h2 className="mb-2 font-semibold">My events</h2>
-      <ul className="space-y-3">
+      <h2 className="mb-2 font-semibold">{t("myEvents")}</h2>
+      <ul className="space-y-4">
         {offers.map((o) => {
           const m = matchFor(o.id);
           return (
-            <li key={o.id} className="rounded border p-3">
+            <li key={o.id} className="rounded-[22px] border border-cnx-line bg-white p-5 shadow-sm">
               <a href={o.events?.luma_url} target="_blank" className="font-medium underline">
                 {o.events?.title}
               </a>
-              <p className="text-sm text-gray-500">
+              <p className="text-sm text-cnx-muted">
                 {o.events?.starts_at ? new Date(o.events.starts_at).toLocaleString() : "date TBD"} · {o.events?.location ?? "venue TBD"}
               </p>
-              {o.mission && <p className="mt-1 text-sm italic text-gray-600">{o.mission}</p>}
+              {o.mission && <p className="mt-1 text-sm italic text-cnx-muted">{o.mission}</p>}
               {m ? (
-                <div className="mt-2 rounded bg-green-50 p-2 text-sm">
+                <div className="mt-2 rounded-xl bg-cnx-pale p-3 text-sm">
                   <div className="flex items-center justify-between">
                     <span>
-                      Matched with <b>{m.profiles?.display_name}</b>
+                      {t("matchedWith")} <b>{m.profiles?.display_name}</b>
                       {m.profiles && <Rating avg={ratings[m.profiles.id]?.avg} count={ratings[m.profiles.id]?.count} />} — LINE:{" "}
                       <b>{m.profiles?.line_id ?? "n/a"}</b>
                     </span>
-                    <button onClick={() => cancelMatch(m.id)} className="ml-2 shrink-0 rounded border px-2 py-1 text-xs">
-                      Cancel match
+                    <button onClick={() => cancelMatch(m.id)} className="ml-2 shrink-0 rounded-lg border border-cnx-line px-2 py-1 text-xs">
+                      {t("cancelMatch")}
                     </button>
                   </div>
                   {m.profiles && o.events && (
@@ -171,9 +168,9 @@ export default function ForeignerDashboard({ me }: { me: Profile }) {
                 </div>
               ) : (
                 <div className="mt-2 flex items-center justify-between">
-                  <p className="text-sm text-gray-400">Waiting for a local to pick you…</p>
-                  <button onClick={() => cancelOffer(o.id)} className="rounded border px-2 py-1 text-xs">
-                    Cancel offer
+                  <p className="text-sm text-cnx-muted">{t("waiting")}</p>
+                  <button onClick={() => cancelOffer(o.id)} className="rounded-lg border border-cnx-line px-2 py-1 text-xs">
+                    {t("cancelOffer")}
                   </button>
                 </div>
               )}

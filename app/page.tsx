@@ -1,7 +1,6 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import ForeignerDashboard from "./ForeignerDashboard";
-import LocalDashboard from "./LocalDashboard";
+import Shell from "./Shell";
 
 export default async function Home() {
   const supabase = await createClient();
@@ -17,9 +16,5 @@ export default async function Home() {
     .single();
   if (!profile) redirect("/login");
 
-  return profile.role === "foreigner" ? (
-    <ForeignerDashboard me={profile} />
-  ) : (
-    <LocalDashboard me={profile} />
-  );
+  return <Shell me={profile} />;
 }

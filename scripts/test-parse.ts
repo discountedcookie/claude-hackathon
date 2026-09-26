@@ -1,5 +1,5 @@
 import { normalizeLumaUrl, fetchLumaEvent } from "../lib/luma";
-import { generateThaiDescription } from "../lib/thai";
+import { generateSummaries } from "../lib/summaries";
 import { readFileSync } from "fs";
 
 for (const line of readFileSync(".env", "utf8").split("\n")) {
@@ -12,14 +12,16 @@ async function main() {
   console.log("normalized:", url);
   const ev = await fetchLumaEvent(url);
   console.log(JSON.stringify({ ...ev, description: ev.description?.slice(0, 200) }, null, 2));
-  const th = await generateThaiDescription({
+  const s = await generateSummaries({
+    kind: "event",
     title: ev.title,
     description: ev.description,
-    starts_at: ev.starts_at,
-    location: ev.location,
+    extra: `${ev.location ?? ""} ${ev.starts_at ?? ""}`,
   });
-  console.log("--- THAI ---");
-  console.log(th);
+  console.log("--- TH ---");
+  console.log(s?.th);
+  console.log("--- ZH ---");
+  console.log(s?.zh);
 }
 
 main();

@@ -49,7 +49,7 @@ export default function LoginPage() {
 
   return (
     <main className="mx-auto flex min-h-screen max-w-sm flex-col justify-center gap-4 p-6">
-      <h1 className="text-2xl font-bold">Plus One · Chiang Mai</h1>
+      <h1 className="text-2xl font-extrabold tracking-tight">With · CNX</h1>
       <p className="text-sm text-gray-500">
         {mode === "signin" ? "Sign in" : "Create account"} — {mode === "signin" ? (
           <button className="underline" onClick={() => setMode("signup")}>need an account?</button>
@@ -58,19 +58,19 @@ export default function LoginPage() {
         )}
       </p>
       <form onSubmit={submit} className="flex flex-col gap-3">
-        <input className="rounded border p-2" placeholder="email" value={email} onChange={(e) => setEmail(e.target.value)} required />
-        <input className="rounded border p-2" placeholder="password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} required />
+        <input className="rounded-xl border border-cnx-line p-2" placeholder="email" value={email} onChange={(e) => setEmail(e.target.value)} required />
+        <input className="rounded-xl border border-cnx-line p-2" placeholder="password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} required />
         {mode === "signup" && (
           <>
-            <input className="rounded border p-2" placeholder="display name" value={displayName} onChange={(e) => setDisplayName(e.target.value)} />
-            <input className="rounded border p-2" placeholder="LINE id (how your match contacts you)" value={lineId} onChange={(e) => setLineId(e.target.value)} />
+            <input className="rounded-xl border border-cnx-line p-2" placeholder="display name" value={displayName} onChange={(e) => setDisplayName(e.target.value)} />
+            <input className="rounded-xl border border-cnx-line p-2" placeholder="LINE id (how your match contacts you)" value={lineId} onChange={(e) => setLineId(e.target.value)} />
             <div className="flex gap-2">
               {(["local", "foreigner"] as const).map((r) => (
                 <button
                   key={r}
                   type="button"
                   onClick={() => setRole(r)}
-                  className={`flex-1 rounded border p-2 ${role === r ? "bg-black text-white" : ""}`}
+                  className={`flex-1 rounded-xl border border-cnx-line p-2 ${role === r ? "bg-cnx-green text-white border-cnx-green" : "text-cnx-muted"}`}
                 >
                   I&apos;m a {r}
                 </button>
@@ -78,7 +78,7 @@ export default function LoginPage() {
             </div>
           </>
         )}
-        <button disabled={busy} className="rounded bg-black p-2 text-white disabled:opacity-50">
+        <button disabled={busy} className="rounded-xl bg-cnx-green p-2 font-semibold text-white disabled:opacity-50">
           {busy ? "…" : mode === "signin" ? "Sign in" : "Sign up"}
         </button>
         {error && <p className="text-sm text-red-600">{error}</p>}
