@@ -22,7 +22,7 @@ type MatchRow = {
   id: string;
   offers: {
     foreigner_id: string;
-    events: { title: string; starts_at: string | null } | null;
+    events: { title: string; starts_at: string | null; luma_url: string } | null;
   } | null;
 };
 
@@ -43,7 +43,7 @@ export default function LocalDashboard({ me }: { me: Profile }) {
 
     const { data: m } = await supabase
       .from("matches")
-      .select("id, offers(foreigner_id, events(title, starts_at))")
+      .select("id, offers(foreigner_id, events(title, starts_at, luma_url))")
       .eq("local_id", me.id);
     const rows = (m as unknown as MatchRow[]) ?? [];
     setMyMatches(rows);
@@ -128,7 +128,9 @@ export default function LocalDashboard({ me }: { me: Profile }) {
           <ul className="mb-8 space-y-3">
             {myMatches.map((m) => (
               <li key={m.id} className="rounded border border-green-300 bg-green-50 p-3">
-                <b>{m.offers?.events?.title}</b>
+                <a href={m.offers?.events?.luma_url} target="_blank" className="font-medium underline">
+                  {m.offers?.events?.title}
+                </a>
                 <p className="text-sm text-gray-600">
                   {m.offers?.events?.starts_at ? new Date(m.offers.events.starts_at).toLocaleString() : ""}
                 </p>
