@@ -19,7 +19,7 @@ export default function ForeignerDashboard({ me }: { me: Profile }) {
   const [message, setMessage] = useState<string | null>(null);
   const [offers, setOffers] = useState<OfferRow[]>([]);
   const [matches, setMatches] = useState<
-    { offer_id: string; profiles: { display_name: string; line_id: string | null } | null }[]
+    { id: string; offer_id: string; profiles: { display_name: string; line_id: string | null } | null }[]
   >([]);
 
   const load = useCallback(async () => {
@@ -32,7 +32,7 @@ export default function ForeignerDashboard({ me }: { me: Profile }) {
 
     const { data: m } = await supabase
       .from("matches")
-      .select("offer_id, offers!inner(foreigner_id), profiles:local_id(display_name, line_id)")
+      .select("id, offer_id, offers!inner(foreigner_id), profiles:local_id(display_name, line_id)")
       .eq("offers.foreigner_id", me.id);
     setMatches((m as never) ?? []);
   }, [supabase, me.id]);
@@ -63,6 +63,16 @@ export default function ForeignerDashboard({ me }: { me: Profile }) {
 
   function matchFor(offerId: string) {
     return matches.find((m) => m.offer_id === offerId);
+  }
+
+  async function cancelOffer(offerId: string) {
+    await supabase.from("offers").delete().eq("id", offerId);
+    load();
+  }
+
+  async function cancelMatch(matchId: string) {
+    await supabase.from("matches").delete().eq("id", matchId);
+    load();
   }
 
   return (
@@ -106,11 +116,21 @@ export default function ForeignerDashboard({ me }: { me: Profile }) {
               </p>
               {o.mission && <p className="mt-1 text-sm italic text-gray-600">{o.mission}</p>}
               {m ? (
-                <p className="mt-2 rounded bg-green-50 p-2 text-sm">
-                  Matched with <b>{m.profiles?.display_name}</b> — LINE: <b>{m.profiles?.line_id ?? "n/a"}</b>
-                </p>
+                <div className="mt-2 flex items-center justify-between rounded bg-green-50 p-2 text-sm">
+                  <span>
+                    Matched with <b>{m.profiles?.display_name}</b> — LINE: <b>{m.profiles?.line_id ?? "n/a"}</b>
+                  </span>
+                  <button onClick={() => cancelMatch(m.id)} className="ml-2 shrink-0 rounded border px-2 py-1 text-xs">
+                    Cancel match
+                  </button>
+                </div>
               ) : (
-                <p className="mt-2 text-sm text-gray-400">Waiting for a local to pick you…</p>
+                <div className="mt-2 flex items-center justify-between">
+                  <p className="text-sm text-gray-400">Waiting for a local to pick you…</p>
+                  <button onClick={() => cancelOffer(o.id)} className="rounded border px-2 py-1 text-xs">
+                    Cancel offer
+                  </button>
+                </div>
               )}
             </li>
           );

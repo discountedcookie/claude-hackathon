@@ -75,6 +75,11 @@ export default function LocalDashboard({ me }: { me: Profile }) {
     };
   }, [supabase, load]);
 
+  async function cancelMatch(matchId: string) {
+    await supabase.from("matches").delete().eq("id", matchId);
+    load();
+  }
+
   async function claim(offerId: string, eventId: string) {
     setNotice(null);
     const { error } = await supabase.from("matches").insert({
@@ -127,10 +132,15 @@ export default function LocalDashboard({ me }: { me: Profile }) {
                 <p className="text-sm text-gray-600">
                   {m.offers?.events?.starts_at ? new Date(m.offers.events.starts_at).toLocaleString() : ""}
                 </p>
-                <p className="mt-1 text-sm">
-                  Your host: <b>{matchContacts[m.id]?.display_name}</b> — LINE:{" "}
-                  <b>{matchContacts[m.id]?.line_id ?? "n/a"}</b>
-                </p>
+                <div className="mt-1 flex items-center justify-between text-sm">
+                  <span>
+                    Your host: <b>{matchContacts[m.id]?.display_name}</b> — LINE:{" "}
+                    <b>{matchContacts[m.id]?.line_id ?? "n/a"}</b>
+                  </span>
+                  <button onClick={() => cancelMatch(m.id)} className="ml-2 shrink-0 rounded border px-2 py-1 text-xs">
+                    Cancel
+                  </button>
+                </div>
               </li>
             ))}
           </ul>
