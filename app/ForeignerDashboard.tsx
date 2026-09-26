@@ -7,12 +7,14 @@ type Profile = { id: string; display_name: string; line_id: string | null; role:
 type OfferRow = {
   id: string;
   status: string;
+  mission: string | null;
   events: { id: string; title: string; starts_at: string | null; location: string | null; luma_url: string } | null;
 };
 
 export default function ForeignerDashboard({ me }: { me: Profile }) {
   const supabase = createClient();
   const [url, setUrl] = useState("");
+  const [mission, setMission] = useState("");
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
   const [offers, setOffers] = useState<OfferRow[]>([]);
@@ -23,7 +25,7 @@ export default function ForeignerDashboard({ me }: { me: Profile }) {
   const load = useCallback(async () => {
     const { data } = await supabase
       .from("offers")
-      .select("id, status, events(id, title, starts_at, location, luma_url)")
+      .select("id, status, mission, events(id, title, starts_at, location, luma_url)")
       .eq("foreigner_id", me.id)
       .order("created_at", { ascending: false });
     setOffers((data as unknown as OfferRow[]) ?? []);
@@ -47,11 +49,14 @@ export default function ForeignerDashboard({ me }: { me: Profile }) {
     const res = await fetch("/api/parse-luma", {
       method: "POST",
       headers: { "content-type": "application/json" },
-      body: JSON.stringify({ url }),
+      body: JSON.stringify({ url, mission }),
     });
     const body = await res.json();
     setMessage(res.ok ? `Registered: ${body.event.title}` : body.error);
-    if (res.ok) setUrl("");
+    if (res.ok) {
+      setUrl("");
+      setMission("");
+    }
     setBusy(false);
     load();
   }
@@ -67,15 +72,21 @@ export default function ForeignerDashboard({ me }: { me: Profile }) {
         <span className="text-sm text-gray-500">{me.display_name} · foreigner</span>
       </header>
 
-      <form onSubmit={share} className="mb-8 flex gap-2">
+      <form onSubmit={share} className="mb-8 flex flex-col gap-2">
         <input
-          className="flex-1 rounded border p-2"
+          className="rounded border p-2"
           placeholder="paste a lu.ma event link"
           value={url}
           onChange={(e) => setUrl(e.target.value)}
           required
         />
-        <button disabled={busy} className="rounded bg-black px-4 text-white disabled:opacity-50">
+        <input
+          className="rounded border p-2"
+          placeholder="your mission — why are you going? (e.g. want to meet the Thai dev scene, happy to demo Claude)"
+          value={mission}
+          onChange={(e) => setMission(e.target.value)}
+        />
+        <button disabled={busy} className="rounded bg-black p-2 text-white disabled:opacity-50">
           {busy ? "…" : "Offer plus one"}
         </button>
       </form>
@@ -93,6 +104,7 @@ export default function ForeignerDashboard({ me }: { me: Profile }) {
               <p className="text-sm text-gray-500">
                 {o.events?.starts_at ? new Date(o.events.starts_at).toLocaleString() : "date TBD"} · {o.events?.location ?? "venue TBD"}
               </p>
+              {o.mission && <p className="mt-1 text-sm italic text-gray-600">{o.mission}</p>}
               {m ? (
                 <p className="mt-2 rounded bg-green-50 p-2 text-sm">
                   Matched with <b>{m.profiles?.display_name}</b> — LINE: <b>{m.profiles?.line_id ?? "n/a"}</b>

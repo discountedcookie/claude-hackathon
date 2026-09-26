@@ -7,6 +7,7 @@ type Profile = { id: string; display_name: string; line_id: string | null; role:
 type OfferRow = {
   id: string;
   status: string;
+  mission: string | null;
   events: {
     id: string;
     title: string;
@@ -31,11 +32,12 @@ export default function LocalDashboard({ me }: { me: Profile }) {
   const [myMatches, setMyMatches] = useState<MatchRow[]>([]);
   const [matchContacts, setMatchContacts] = useState<Record<string, { display_name: string; line_id: string | null }>>({});
   const [notice, setNotice] = useState<string | null>(null);
+  const [missionByEvent, setMissionByEvent] = useState<Record<string, string>>({});
 
   const load = useCallback(async () => {
     const { data } = await supabase
       .from("offers")
-      .select("id, status, events(id, title, description_th, starts_at, location, luma_url), profiles:foreigner_id(display_name)")
+      .select("id, status, mission, events(id, title, description_th, starts_at, location, luma_url), profiles:foreigner_id(display_name)")
       .eq("status", "open");
     setOffers((data as unknown as OfferRow[]) ?? []);
 
@@ -73,17 +75,31 @@ export default function LocalDashboard({ me }: { me: Profile }) {
     };
   }, [supabase, load]);
 
-  async function claim(offerId: string | "any", eventId?: string) {
+  async function claim(offerId: string, eventId: string) {
     setNotice(null);
-    const id =
-      offerId === "any"
-        ? // eslint-disable-next-line react-hooks/purity -- event handler, not render
-        offers.filter((o) => o.events?.id === eventId)[Math.floor(Math.random() * offers.filter((o) => o.events?.id === eventId).length)]?.id
-        : offerId;
-    if (!id) return;
-    const { error } = await supabase.from("matches").insert({ offer_id: id, local_id: me.id });
-    setNotice(error ? "Too slow — someone just took that one." : "Matched! Check below for their LINE id.");
+    const { error } = await supabase.from("matches").insert({
+      offer_id: offerId,
+      local_id: me.id,
+      local_mission: missionByEvent[eventId] || null,
+    });
+    setNotice(error ? "Too slow — someone just took that one." : "Matched! Check above for their LINE id.");
     load();
+  }
+
+  async function fit(eventId: string) {
+    setNotice("Asking who fits you best…");
+    const res = await fetch("/api/match-suggest", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ event_id: eventId, mission: missionByEvent[eventId] ?? "" }),
+    });
+    const body = await res.json();
+    if (!res.ok || !body.offer_id) {
+      setNotice(body.error ?? "Could not suggest a match.");
+      return;
+    }
+    setNotice(`Picked for you: ${body.reason}`);
+    claim(body.offer_id, eventId);
   }
 
   const byEvent = offers.reduce<Record<string, OfferRow[]>>((acc, o) => {
@@ -140,17 +156,26 @@ export default function LocalDashboard({ me }: { me: Profile }) {
                 <p className="mt-2 whitespace-pre-line rounded bg-amber-50 p-2 text-sm">{ev.description_th}</p>
               )}
               <div className="mt-3 space-y-2">
+                <input
+                  className="rounded border p-1 text-sm"
+                  placeholder="your mission for this event — why are you going?"
+                  value={missionByEvent[eventId] ?? ""}
+                  onChange={(e) => setMissionByEvent((s) => ({ ...s, [eventId]: e.target.value }))}
+                />
                 {rows.map((o) => (
-                  <div key={o.id} className="flex items-center justify-between text-sm">
-                    <span>with <b>{o.profiles?.display_name}</b></span>
-                    <button onClick={() => claim(o.id)} className="rounded bg-black px-3 py-1 text-white">
+                  <div key={o.id} className="flex items-center justify-between gap-2 text-sm">
+                    <span>
+                      with <b>{o.profiles?.display_name}</b>
+                      {o.mission && <span className="block italic text-gray-500">{o.mission}</span>}
+                    </span>
+                    <button onClick={() => claim(o.id, eventId)} className="shrink-0 rounded bg-black px-3 py-1 text-white">
                       Pick them
                     </button>
                   </div>
                 ))}
                 {rows.length > 1 && (
-                  <button onClick={() => claim("any", eventId)} className="w-full rounded border p-1 text-sm">
-                    Any of the {rows.length} — surprise me
+                  <button onClick={() => fit(eventId)} className="w-full rounded border p-1 text-sm">
+                    Who fits me? (AI picks from {rows.length})
                   </button>
                 )}
               </div>

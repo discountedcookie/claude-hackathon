@@ -18,9 +18,11 @@ export async function POST(request: Request) {
     return Response.json({ error: "foreigners only" }, { status: 403 });
 
   let url: string;
+  let mission: string | null = null;
   try {
     const body = await request.json();
     url = normalizeLumaUrl(String(body.url ?? ""));
+    mission = body.mission ? String(body.mission).slice(0, 500) : null;
   } catch (e) {
     return Response.json({ error: (e as Error).message }, { status: 400 });
   }
@@ -71,7 +73,7 @@ export async function POST(request: Request) {
   const { data: offer, error: offerError } = await supabase
     .from("offers")
     .upsert(
-      { event_id: event.id, foreigner_id: user.id },
+      { event_id: event.id, foreigner_id: user.id, mission },
       { onConflict: "event_id,foreigner_id" },
     )
     .select()
