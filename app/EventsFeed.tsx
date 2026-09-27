@@ -1,5 +1,6 @@
 "use client";
 
+import Field, { allValid } from "./Field";
 import Spinner, { AiWorking } from "./Spinner";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
@@ -266,8 +267,10 @@ export default function EventsFeed({ meId }: { meId: string }) {
           {t("pasteLink")}
         </label>
         <div className="flex gap-2">
-          <input id="luma-url" className="cnx-input" placeholder="https://lu.ma/…" value={url} onChange={(e) => setUrl(e.target.value)} required />
-          <button disabled={busy} className="cnx-btn shrink-0">
+          <span className="flex-1">
+            <Field rule="lumaUrl" id="luma-url" type="url" inputMode="url" placeholder="https://lu.ma/…" value={url} onChange={(e) => setUrl(e.target.value)} required />
+          </span>
+          <button disabled={busy || !allValid([["lumaUrl", url]])} className="cnx-btn shrink-0 self-start">
             {busy ? <Spinner /> : t("addEvent")}
           </button>
         </div>

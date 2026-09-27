@@ -1,14 +1,15 @@
 import { z } from "zod";
 import type { LanguageSkill } from "@/lib/claude";
+import { check, LINE_ID } from "@/lib/validate";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient, getUserId } from "@/lib/supabase/server";
 
 // Saves the confirmed profile. Edits may only rename and remove items from the parsed draft, never add new text.
 const Body = z.object({
-  display_name: z.string().trim().min(1).max(60),
+  display_name: z.string().trim().min(1).max(60).refine((v) => !check("name", v), "invalid name"),
   languages: z.array(z.string().max(8)).min(1).max(6),
   interests: z.array(z.string().max(30)).max(6),
-  line_id: z.string().trim().min(1).max(60),
+  line_id: z.string().trim().regex(LINE_ID, "invalid LINE ID"),
 });
 
 export async function POST(request: Request) {

@@ -26,7 +26,7 @@ export const strings: Dict = {
   imGoing: { en: "I'm going", th: "ฉันจะไป", zh: "我要去" },
   going: { en: "Going", th: "จะไป", zh: "要去" },
   notGoing: { en: "Not going", th: "ไม่ไปแล้ว", zh: "不去了" },
-  whyGoingPh: { en: "Why you're going", th: "ทำไมถึงไป", zh: "为什么去" },
+  whyGoingPh: { en: "Why are you going?", th: "ไปงานนี้เพราะอะไร?", zh: "你为什么去？" },
   othersGoing: { en: "Also going", th: "คนอื่นที่จะไป", zh: "也要去的人" },
   nobodyElse: { en: "Nobody else yet.", th: "ยังไม่มีใคร", zh: "暂时还没有别人" },
   pending: { en: "Pending", th: "รอตอบรับ", zh: "等待回复" },
@@ -101,7 +101,6 @@ export const strings: Dict = {
   authWeak: { en: "Password is too weak (at least 6 characters).", th: "รหัสผ่านง่ายเกินไป (อย่างน้อย 6 ตัวอักษร)", zh: "密码太简单（至少 6 位）" },
   more: { en: "more", th: "อ่านต่อ", zh: "展开" },
   less: { en: "less", th: "ย่อ", zh: "收起" },
-  addNote: { en: "Add a note", th: "เพิ่มโน้ต", zh: "添加备注" },
   save: { en: "Save", th: "บันทึก", zh: "保存" },
   ask: { en: "Ask", th: "ชวน", zh: "邀请" },
   cancelBuddy: { en: "Cancel plan", th: "ยกเลิกนัด", zh: "取消约定" },
@@ -185,6 +184,13 @@ export const strings: Dict = {
   suggesting: { en: "Finding people…", th: "กำลังหาคน…", zh: "正在查找……" },
   writingListing: { en: "Writing the listing…", th: "กำลังเขียนประกาศ…", zh: "正在撰写介绍……" },
   preparingPlan: { en: "Setting up…", th: "กำลังเตรียม…", zh: "正在准备……" },
+  vEmail: { en: "Enter a valid email, like name@example.com.", th: "กรอกอีเมลให้ถูกต้อง เช่น name@example.com", zh: "请输入有效的邮箱，例如 name@example.com" },
+  vPassword: { en: "At least 6 characters.", th: "อย่างน้อย 6 ตัวอักษร", zh: "至少 6 个字符" },
+  vRequired: { en: "Required.", th: "จำเป็นต้องกรอก", zh: "必填" },
+  vTooLong: { en: "Too long (max 60 characters).", th: "ยาวเกินไป (สูงสุด 60 ตัวอักษร)", zh: "太长了（最多 60 个字符）" },
+  vNoLinks: { en: "Please don’t put links in your name.", th: "ไม่ใส่ลิงก์ในชื่อ", zh: "名字里请不要放链接" },
+  vLineId: { en: "3–20 letters, numbers, . _ - (as in LINE).", th: "3–20 ตัว: ตัวอักษร ตัวเลข . _ - (ตามรูปแบบ LINE)", zh: "3–20 位：字母、数字、. _ -（与 LINE 一致）" },
+  vLuma: { en: "Paste a lu.ma or luma.com event link.", th: "วางลิงก์งานจาก lu.ma หรือ luma.com", zh: "请粘贴 lu.ma 或 luma.com 的活动链接" },
 };
 
 const LangContext = createContext<{ lang: Lang; setLang: (l: Lang) => void; userId: string | null }>({

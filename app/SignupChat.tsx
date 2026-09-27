@@ -1,5 +1,6 @@
 "use client";
 
+import Field, { allValid } from "./Field";
 import Spinner from "./Spinner";
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
@@ -176,7 +177,7 @@ export default function SignupChat({ transcript = [], draft: initialDraft = null
           <p className="font-semibold">{t("onbConfirm")}</p>
           <label className="block space-y-1">
             <span className="text-xs font-semibold text-cnx-muted">{t("onbName")}</span>
-            <input className="cnx-input" value={name} onChange={(e) => setName(e.target.value)} maxLength={60} required />
+            <Field rule="name" value={name} onChange={(e) => setName(e.target.value)} maxLength={60} required />
           </label>
           <div className="space-y-1">
             <span className="text-xs font-semibold text-cnx-muted">{t("onbLanguages")}</span>
@@ -212,27 +213,33 @@ export default function SignupChat({ transcript = [], draft: initialDraft = null
           )}
           <label className="block space-y-1">
             <span className="text-xs font-semibold text-cnx-muted">{t("onbLine")}</span>
-            <input className="cnx-input" value={line} onChange={(e) => setLine(e.target.value)} maxLength={60} required />
-            <span className="text-xs text-cnx-muted">{t("onbLineHint")}</span>
+            <Field rule="lineId" value={line} onChange={(e) => setLine(e.target.value)} maxLength={21} autoCapitalize="none" required hint={t("onbLineHint")} />
           </label>
           {guest && (
             <details className="text-sm">
               <summary className="cursor-pointer text-cnx-muted">{t("onbEmailOptional")}</summary>
               <div className="mt-2 space-y-2">
-                <input className="cnx-input" type="email" placeholder={t("emailPh")} value={email} onChange={(e) => setEmail(e.target.value)} />
-                <input
-                  className="cnx-input"
+                <Field rule="email" optional type="email" autoComplete="email" placeholder={t("emailPh")} value={email} onChange={(e) => setEmail(e.target.value)} />
+                <Field
+                  rule="password"
+                  optional={!email.trim()}
                   type="password"
+                  autoComplete="new-password"
                   placeholder={t("passwordPh")}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  minLength={6}
-                  required={!!email.trim()}
                 />
               </div>
             </details>
           )}
-          <button disabled={busy || !name.trim() || !line.trim() || langs.length === 0} className="cnx-btn w-full">
+          <button
+            disabled={
+              busy ||
+              langs.length === 0 ||
+              !allValid([["name", name], ["lineId", line], ["email", email, true], ["password", password, !email.trim()]])
+            }
+            className="cnx-btn w-full"
+          >
             {busy ? <Spinner /> : t("onbFinish")}
           </button>
         </form>

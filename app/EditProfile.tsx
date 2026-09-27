@@ -1,5 +1,6 @@
 "use client";
 
+import Field, { allValid } from "./Field";
 import Spinner from "./Spinner";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
@@ -56,17 +57,16 @@ export default function EditProfile({
           <form onSubmit={save} className="space-y-4">
             <label className="block space-y-1">
               <span className="text-xs font-semibold text-cnx-muted">{t("onbName")}</span>
-              <input className="cnx-input" value={name} onChange={(e) => setName(e.target.value)} maxLength={60} required />
+              <Field rule="name" value={name} onChange={(e) => setName(e.target.value)} maxLength={60} required />
             </label>
             <label className="block space-y-1">
               <span className="text-xs font-semibold text-cnx-muted">{t("onbLine")}</span>
-              <input className="cnx-input" value={line ?? ""} onChange={(e) => setLine(e.target.value)} maxLength={60} required />
-              <span className="text-xs text-cnx-muted">{t("onbLineHint")}</span>
+              <Field rule="lineId" value={line ?? ""} onChange={(e) => setLine(e.target.value)} maxLength={21} autoCapitalize="none" required hint={t("onbLineHint")} />
             </label>
             {error && <p className="text-sm text-cnx-danger">{t("somethingWrong")}</p>}
             <div className="flex gap-2">
               <Dialog.Close className="cnx-btn-light flex-1">{t("cancel")}</Dialog.Close>
-              <button disabled={busy || line === null} className="cnx-btn flex-1">
+              <button disabled={busy || line === null || !allValid([["name", name], ["lineId", line ?? ""]])} className="cnx-btn flex-1">
                 {busy ? <Spinner /> : t("save")}
               </button>
             </div>

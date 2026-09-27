@@ -1,5 +1,6 @@
 "use client";
 
+import Field, { allValid } from "../Field";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
@@ -64,9 +65,9 @@ function LoginForm() {
         </Link>
       </h1>
       <form onSubmit={submit} className="flex flex-col gap-3">
-        <input className="cnx-input" type="email" placeholder={t("emailPh")} value={email} onChange={(e) => setEmail(e.target.value)} required />
-        <input className="cnx-input" type="password" placeholder={t("passwordPh")} value={password} onChange={(e) => setPassword(e.target.value)} required minLength={6} />
-        <button disabled={busy} className="cnx-btn w-full">
+        <Field rule="email" type="email" autoComplete="email" placeholder={t("emailPh")} value={email} onChange={(e) => setEmail(e.target.value)} required />
+        <Field rule="password" type="password" autoComplete="current-password" placeholder={t("passwordPh")} value={password} onChange={(e) => setPassword(e.target.value)} required />
+        <button disabled={busy || !allValid([["email", email], ["password", password]])} className="cnx-btn w-full">
           {busy ? "…" : t("signIn")}
         </button>
         {error && <p className="text-sm text-cnx-danger">{error}</p>}

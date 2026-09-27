@@ -67,6 +67,11 @@ export default function EventCard({
       ? await supabase.from("attendances").delete().eq("event_id", ev.id).eq("user_id", meId)
       : await supabase.from("attendances").insert({ event_id: ev.id });
     if (error) fail(error.message);
+    // Right after "I'm going", ask why (optional): it's what others read when choosing a buddy.
+    else if (!mine) {
+      setNote("");
+      setEditingNote(true);
+    }
     onChange();
   }
 
@@ -247,7 +252,7 @@ export default function EventCard({
               }}
               className="min-w-0 truncate text-left text-sm text-cnx-muted"
             >
-              {mine.note ? <span className="">“{mine.note}”</span> : <span className="underline">{t("addNote")}</span>}
+              {mine.note ? <span>“{mine.note}”</span> : <span className="underline">{t("whyGoingPh")}</span>}
             </button>
           ))}
         <button onClick={toggleGoing} className={`ml-auto w-full text-sm sm:w-auto ${mine ? "cnx-btn-light font-semibold" : "cnx-btn"}`}>
