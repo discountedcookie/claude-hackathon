@@ -86,12 +86,12 @@ export function EventHeading({ ev }: { ev: FeedEvent }) {
   return (
     <div className="flex gap-3">
       <div className="flex h-16 w-14 shrink-0 flex-col items-center justify-center rounded-2xl bg-cnx-pale text-cnx-green">
-        <span className="text-2xl font-bold leading-none">{d?.day ?? "?"}</span>
+        <span className="text-[29px] font-bold leading-none tracking-tight">{d?.day ?? "?"}</span>
         <span className="mt-1 text-[11px] font-semibold uppercase">{d?.month ?? ""}</span>
       </div>
       <div className="min-w-0">
         <p className="text-xs text-cnx-muted">{d ? `${d.weekday} ${d.time}` : t("dateTbd")}</p>
-        <a href={ev.luma_url} target="_blank" className="line-clamp-2 text-lg font-semibold leading-snug tracking-tight hover:underline">
+        <a href={ev.luma_url} target="_blank" className="line-clamp-2 text-[21px] font-bold leading-snug tracking-tight hover:underline">
           {ev.title}
         </a>
         <p className="mt-0.5 flex items-center gap-1 text-xs text-cnx-muted">
@@ -138,7 +138,7 @@ export function Clamp({ text, className = "" }: { text: string; className?: stri
 
   return (
     <div className={className}>
-      <p ref={ref} className={`font-reading whitespace-pre-line ${open ? "" : "line-clamp-3"}`}>
+      <p ref={ref} className={`whitespace-pre-line ${open ? "" : "line-clamp-3"}`}>
         {text}
       </p>
       {(overflows || open) && (

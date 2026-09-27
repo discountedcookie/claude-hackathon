@@ -46,7 +46,7 @@ export function Faq({ prefix, count }: { prefix: "faqEv" | "faqPr"; count: numbe
             {Array.from({ length: count }, (_, i) => (
               <div key={i}>
                 <dt className="font-semibold">{t(`${prefix}Q${i + 1}`)}</dt>
-                <dd className="font-reading mt-1 text-sm text-cnx-muted">{t(`${prefix}A${i + 1}`)}</dd>
+                <dd className="mt-1 text-sm text-cnx-muted">{t(`${prefix}A${i + 1}`)}</dd>
               </div>
             ))}
           </dl>

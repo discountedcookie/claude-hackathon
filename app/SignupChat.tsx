@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { useLang, useT } from "@/lib/i18n";
 import Icon from "./Icon";
+import VoiceInput from "./VoiceInput";
 import { useLanguageName, type LanguageSkill } from "./feed-types";
 
 type Line = { role: "user" | "assistant"; text: string };
@@ -107,7 +108,7 @@ export default function SignupChat({ transcript = [], draft: initialDraft = null
       {[{ role: "assistant", text: t("onbHello") } as Line, ...lines].map((l, i) => (
         <p
           key={i}
-          className={`font-reading max-w-[88%] whitespace-pre-line rounded-2xl px-4 py-2.5 text-[15px] ${
+          className={`max-w-[88%] whitespace-pre-line rounded-2xl px-4 py-2.5 text-[15px] ${
             l.role === "assistant" ? "rounded-tl-sm bg-cnx-pale" : "ml-auto rounded-tr-sm bg-cnx-green text-white"
           }`}
         >
@@ -126,6 +127,7 @@ export default function SignupChat({ transcript = [], draft: initialDraft = null
             onChange={(e) => setText(e.target.value)}
             disabled={busy}
           />
+          <VoiceInput onText={setText} disabled={busy} />
           <button disabled={busy || !text.trim()} className="cnx-btn shrink-0" aria-label={t("send")}>
             <Icon name="send" className="h-5 w-5" />
           </button>

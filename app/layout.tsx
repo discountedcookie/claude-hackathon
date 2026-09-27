@@ -1,13 +1,27 @@
 import type { Metadata, Viewport } from "next";
-import { Noto_Sans, Noto_Sans_SC, Noto_Sans_Thai, Noto_Sans_Thai_Looped } from "next/font/google";
+import localFont from "next/font/local";
+import { Noto_Sans_SC } from "next/font/google";
 import "./globals.css";
 import RegisterSW from "./RegisterSW";
 
-// One family for every script. Thai UI is loopless; long descriptions use the looped Thai (.font-reading).
-// Chinese and looped Thai are not preloaded: the browser fetches only the unicode-range slices a page uses.
-const notoSans = Noto_Sans({ subsets: ["latin", "latin-ext"], variable: "--font-noto", display: "swap" });
-const notoThai = Noto_Sans_Thai({ subsets: ["thai"], variable: "--font-noto-thai", display: "swap" });
-const notoThaiLooped = Noto_Sans_Thai_Looped({ subsets: ["thai"], variable: "--font-noto-thai-looped", display: "swap", preload: false });
+// LINE Seed (EN + TH, © LY Corporation, SIL OFL 1.1: app/fonts/OFL.txt) from the design polish; Noto Sans SC for Chinese.
+// Chinese is not preloaded: the browser fetches only the unicode-range slices a page uses.
+const lineSeed = localFont({
+  src: [
+    { path: "./fonts/LINESeedSans_W_Rg.woff2", weight: "400" },
+    { path: "./fonts/LINESeedSans_W_Bd.woff2", weight: "700" },
+  ],
+  variable: "--font-line-seed",
+  display: "swap",
+});
+const lineSeedThai = localFont({
+  src: [
+    { path: "./fonts/LINESeedSansTH_W_Rg.woff2", weight: "400" },
+    { path: "./fonts/LINESeedSansTH_W_Bd.woff2", weight: "700" },
+  ],
+  variable: "--font-line-seed-th",
+  display: "swap",
+});
 const notoSC = Noto_Sans_SC({ variable: "--font-noto-sc", display: "swap", preload: false });
 
 export const metadata: Metadata = {
@@ -22,7 +36,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html
       lang="en"
-      className={`${notoSans.variable} ${notoThai.variable} ${notoThaiLooped.variable} ${notoSC.variable} h-full antialiased`}
+      className={`${lineSeed.variable} ${lineSeedThai.variable} ${notoSC.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">
         <RegisterSW />

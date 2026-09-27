@@ -67,7 +67,7 @@ export default function Written({ kind, id, text, className = "" }: { kind: Kind
 
   const translated = needs && result?.key === key ? result.text : null;
   return (
-    <span className={`font-reading ${className}`}>
+    <span className={`${className}`}>
       {translated && !showOriginal ? translated : text}
       {translated && (
         <button onClick={() => setShowOriginal((o) => !o)} className="ml-1.5 text-[11px] font-semibold text-cnx-muted underline">

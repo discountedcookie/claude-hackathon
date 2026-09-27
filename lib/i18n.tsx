@@ -174,6 +174,7 @@ export const strings: Dict = {
   noSuggestions: { en: "No one to suggest yet: go to an event with a buddy first.", th: "ยังไม่มีคนแนะนำ ลองไปงานกับเพื่อนก่อน", zh: "暂时没有推荐：先和伙伴去参加一次活动吧。" },
   editProfile: { en: "Edit profile", th: "แก้ไขโปรไฟล์", zh: "编辑资料" },
   profileSaved: { en: "Saved", th: "บันทึกแล้ว", zh: "已保存" },
+  voice: { en: "Speak", th: "พูด", zh: "语音输入" },
 };
 
 const LangContext = createContext<{ lang: Lang; setLang: (l: Lang) => void; userId: string | null }>({

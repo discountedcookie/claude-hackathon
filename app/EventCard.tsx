@@ -114,7 +114,7 @@ export default function EventCard({
             {t("original")}
           </button>
           {showOriginal && (
-            <p className="font-reading mt-2 max-h-80 overflow-y-auto whitespace-pre-line rounded-xl border border-cnx-line p-3 text-sm">
+            <p className="mt-2 max-h-80 overflow-y-auto whitespace-pre-line rounded-xl border border-cnx-line p-3 text-sm">
               {ev.description_raw}
             </p>
           )}
@@ -206,7 +206,7 @@ export default function EventCard({
               }}
               className="min-w-0 truncate text-left text-sm text-cnx-muted"
             >
-              {mine.note ? <span className="font-reading">“{mine.note}”</span> : <span className="underline">{t("addNote")}</span>}
+              {mine.note ? <span className="">“{mine.note}”</span> : <span className="underline">{t("addNote")}</span>}
             </button>
           ))}
         <button onClick={toggleGoing} className={`ml-auto w-full text-sm sm:w-auto ${mine ? "cnx-btn-light font-semibold" : "cnx-btn"}`}>

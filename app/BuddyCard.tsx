@@ -112,7 +112,7 @@ export default function BuddyCard({
       </div>
 
       {!over && (
-        <dl className="font-reading space-y-2 text-sm">
+        <dl className="space-y-2 text-sm">
           {introState === "loading" && !meet ? (
             <p className="animate-pulse text-cnx-muted">{t("introLoading")}</p>
           ) : (
@@ -180,9 +180,9 @@ export default function BuddyCard({
           <p className="text-sm font-semibold">{t("secFollow", { name: other.display_name })}</p>
           {followUp ? (
             <div className="space-y-2">
-              <p className="font-reading whitespace-pre-line rounded-xl bg-cnx-pale p-3 text-sm">{followUp.message_in_their_language}</p>
+              <p className="whitespace-pre-line rounded-xl bg-cnx-pale p-3 text-sm">{followUp.message_in_their_language}</p>
               {followUp.message_in_my_language && (
-                <p className="font-reading whitespace-pre-line text-xs text-cnx-muted">{followUp.message_in_my_language}</p>
+                <p className="whitespace-pre-line text-xs text-cnx-muted">{followUp.message_in_my_language}</p>
               )}
               <div className="flex flex-wrap gap-2">
                 <a

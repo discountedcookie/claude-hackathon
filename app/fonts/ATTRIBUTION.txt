@@ -1,0 +1,32 @@
+LINE Seed font attribution
+
+Copyright © LY Corporation
+
+Font families: LINE Seed Sans and LINE Seed Sans TH.
+License: SIL Open Font License, Version 1.1 (see OFL.txt).
+Official source and licensing statement: https://seed.line.me/index_en.html
+
+These four web fonts are unmodified files extracted from the official
+archives listed below. The original archives contain no separate license
+file; their font metadata specifies SIL OFL 1.1 and © LY Corporation.
+The full official OFL 1.1 text is included here with that copyright notice.
+
+Downloads:
+https://seed.line.me/src/images/fonts/LINE_Seed_Sans_EN.zip
+https://seed.line.me/src/images/fonts/LINE_Seed_Sans_TH.zip
+
+Unmodified files:
+  LINESeedSansTH_W_Bd.woff2 — 29260 bytes; font weight 700
+  SHA256: 63a428a7989a73de4e908092717de3a70a2c128b7b01b35a3821f39db22a2003
+  LINESeedSansTH_W_Rg.woff2 — 29740 bytes; font weight 400
+  SHA256: caf74c95ba957707253e40747d8364c937970df80551ab0766afc073d1fd90d6
+  LINESeedSans_W_Bd.woff2 — 13828 bytes; font weight 700
+  SHA256: 5f11153e44c45bf0a088b823fe24f22b52a909b1d40688f6e2727dc53db0d64e
+  LINESeedSans_W_Rg.woff2 — 14100 bytes; font weight 400
+  SHA256: b51678d5ca158afcad58f350e57a2c70efa24fed78dfdc12355513c0f9cee9f6
+
+Full license text source: https://openfontlicense.org/documents/OFL.txt
+Retrieved: 2026-09-27
+
+LINE Seed is used as a typeface. No affiliation with or endorsement by
+LINE / LY Corporation is implied.
