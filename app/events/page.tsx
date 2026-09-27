@@ -1,32 +1,14 @@
-import { redirect } from "next/navigation";
-import { createClient } from "@/lib/supabase/server";
+import { requireProfile } from "@/lib/me";
 import AppFrame from "../AppFrame";
+import EventsFeed from "../EventsFeed";
 import Hero from "../Hero";
-import ForeignerDashboard from "../ForeignerDashboard";
-import LocalDashboard from "../LocalDashboard";
 
 export default async function EventsPage() {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) redirect("/login");
-
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("*")
-    .eq("id", user.id)
-    .single();
-  if (!profile) redirect("/login");
-
+  const profile = await requireProfile();
   return (
     <AppFrame me={profile}>
       <Hero variant="events" />
-      {profile.role === "foreigner" ? (
-        <ForeignerDashboard me={profile} />
-      ) : (
-        <LocalDashboard me={profile} />
-      )}
+      <EventsFeed meId={profile.id} />
     </AppFrame>
   );
 }

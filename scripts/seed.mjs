@@ -8,19 +8,16 @@ const supabase = createClient(url, serviceKey, {
   auth: { autoRefreshToken: false, persistSession: false },
 });
 
+// Profiles and contacts are created by the on_auth_user_created trigger from user_metadata.
+// Users still go through chat onboarding on first sign-in.
 const users = [
-  { email: "nomad@test.com", password: "demo1234", name: "Alex (nomad)", role: "foreigner", line: "alex_line" },
-  { email: "local@test.com", password: "demo1234", name: "Mali (local)", role: "local", line: "mali_line" },
+  { email: "nomad@test.com", password: "demo1234", display_name: "Alex", line_id: "alex_line", language: "en" },
+  { email: "local@test.com", password: "demo1234", display_name: "Mali", line_id: "mali_line", language: "th" },
+  { email: "zh@test.com", password: "demo1234", display_name: "Wei", line_id: "wei_line", language: "zh" },
 ];
 
-for (const u of users) {
-  const { data: created, error } = await supabase.auth.admin.createUser({
-    email: u.email,
-    password: u.password,
-    email_confirm: true,
-  });
+for (const { email, password, ...meta } of users) {
+  const { error } = await supabase.auth.admin.createUser({ email, password, email_confirm: true, user_metadata: meta });
   if (error && !/already/i.test(error.message)) throw error;
-  const id = created?.user?.id ?? (await supabase.auth.admin.listUsers()).data.users.find((x) => x.email === u.email)?.id;
-  await supabase.from("profiles").upsert({ id, display_name: u.name, line_id: u.line, role: u.role });
-  console.log(`seeded ${u.email} (${u.role})`);
+  console.log(`seeded ${email} (${meta.language})`);
 }

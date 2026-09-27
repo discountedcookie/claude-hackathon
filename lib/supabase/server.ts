@@ -12,11 +12,21 @@ export async function createClient() {
           return cookieStore.getAll();
         },
         setAll(cookiesToSet) {
-          cookiesToSet.forEach(({ name, value, options }) =>
-            cookieStore.set(name, value, options),
-          );
+          // Server Components can't write cookies; the browser client refreshes the session instead.
+          try {
+            cookiesToSet.forEach(({ name, value, options }) =>
+              cookieStore.set(name, value, options),
+            );
+          } catch {}
         },
       },
     },
   );
+}
+
+// Verifies the session JWT (locally when the project uses asymmetric signing keys) instead of
+// a round trip to the auth server on every request.
+export async function getUserId(supabase: Awaited<ReturnType<typeof createClient>>): Promise<string | null> {
+  const { data } = await supabase.auth.getClaims();
+  return data?.claims.sub ?? null;
 }

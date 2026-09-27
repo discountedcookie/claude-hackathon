@@ -1,75 +1,106 @@
-export type ParsedLumaEvent = {
+// Luma's public web endpoints (unofficial; the official API only covers calendars you own).
+
+const HEADERS = {
+  "user-agent":
+    "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126 Safari/537.36",
+  accept: "application/json",
+};
+
+export type LumaEvent = {
   luma_url: string;
   title: string;
-  description: string | null;
   starts_at: string | null;
+  ends_at: string | null;
+  timezone: string | null;
   location: string | null;
+  lat: number | null;
+  lng: number | null;
   image_url: string | null;
+  is_free: boolean;
+  is_public: boolean;
+  description: string | null;
+};
+
+type LumaEntry = {
+  event: {
+    name: string;
+    url: string;
+    start_at?: string;
+    end_at?: string;
+    timezone?: string;
+    cover_url?: string;
+    visibility?: string;
+    location_type?: string;
+    coordinate?: { latitude: number; longitude: number } | null;
+    geo_address_info?: {
+      address?: string;
+      sublocality?: string;
+      city_state?: string;
+    } | null;
+  };
+  ticket_info?: { is_free?: boolean } | null;
+  description_mirror?: unknown;
 };
 
 export function normalizeLumaUrl(raw: string): string {
   const url = new URL(raw.trim());
-  if (!/(^|\.)lu\.ma$|(^|\.)luma\.com$/.test(url.hostname))
-    throw new Error("not a Luma URL");
+  if (!/(^|\.)lu\.ma$|(^|\.)luma\.com$/.test(url.hostname)) throw new Error("not a Luma URL");
   const path = url.pathname.replace(/\/+$/, "").toLowerCase();
   if (!/^\/[a-z0-9-]+$/i.test(path)) throw new Error("not a Luma event URL");
   return `https://lu.ma${path}`;
 }
 
-export async function fetchLumaEvent(url: string): Promise<ParsedLumaEvent> {
-  const res = await fetch(url, {
-    headers: {
-      "user-agent":
-        "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126 Safari/537.36",
-      "accept-language": "en-US,en;q=0.9",
-    },
-  });
-  if (!res.ok) throw new Error(`Luma fetch failed: ${res.status}`);
-  const html = await res.text();
+// Luma descriptions are ProseMirror documents; flatten them to plain text.
+function proseToText(node: unknown): string {
+  if (!node || typeof node !== "object") return "";
+  const n = node as { type?: string; text?: string; content?: unknown[] };
+  if (n.type === "text") return n.text ?? "";
+  if (n.type === "hard_break") return "\n";
+  const inner = (n.content ?? []).map(proseToText).join("");
+  return ["paragraph", "heading", "list_item", "blockquote"].includes(n.type ?? "") ? `${inner}\n` : inner;
+}
 
-  const { Defuddle } = await import("defuddle/node");
-  const article = await Defuddle(html, url);
-
-  const jsonLdBlocks = [
-    ...html.matchAll(
-      /<script[^>]*type="application\/ld\+json"[^>]*>([\s\S]*?)<\/script>/gi,
-    ),
-  ]
-    .map((m) => {
-      try {
-        return JSON.parse(m[1]);
-      } catch {
-        return null;
-      }
-    })
-    .filter(Boolean);
-  const eventLd = jsonLdBlocks.find(
-    (b) => b?.["@type"] === "Event" || b?.["@type"]?.includes?.("Event"),
-  );
-
-  const og = (prop: string) =>
-    html.match(
-      new RegExp(`<meta[^>]*property="og:${prop}"[^>]*content="([^"]*)"`, "i"),
-    )?.[1] ?? null;
-
-  const title =
-    article.title ||
-    og("title")?.replace(/\s*·\s*Luma\s*$/, "") ||
-    "Untitled event";
-
+function toLumaEvent(entry: LumaEntry): LumaEvent {
+  const ev = entry.event;
+  const geo = ev.geo_address_info;
+  const description = proseToText(entry.description_mirror).replace(/\n{3,}/g, "\n\n").trim();
   return {
-    luma_url: url,
-    title,
-    description: article.content ? article.description ?? null : null,
-    starts_at: eventLd?.startDate ?? null,
+    luma_url: `https://lu.ma/${ev.url.toLowerCase()}`,
+    title: ev.name,
+    starts_at: ev.start_at ?? null,
+    ends_at: ev.end_at ?? null,
+    timezone: ev.timezone ?? null,
     location:
-      typeof eventLd?.location?.name === "string"
-        ? eventLd.location.name
-        : typeof eventLd?.location === "string"
-          ? eventLd.location
-          : (og("latitude") && og("longitude")
-              ? `${og("latitude")},${og("longitude")}`
-              : null),
-    image_url: article.image ?? og("image"),
+      ev.location_type === "online"
+        ? "Online"
+        : geo?.address ?? ([geo?.sublocality, geo?.city_state].filter(Boolean).join(", ") || null),
+    lat: ev.coordinate?.latitude ?? null,
+    lng: ev.coordinate?.longitude ?? null,
+    image_url: ev.cover_url ?? null,
+    is_free: entry.ticket_info?.is_free ?? false,
+    is_public: ev.visibility === "public",
+    description: description || null,
   };
+}
+
+export async function fetchLumaEvent(url: string): Promise<LumaEvent> {
+  const slug = new URL(url).pathname.slice(1);
+  const res = await fetch(`https://api.lu.ma/url?url=${encodeURIComponent(slug)}`, { headers: HEADERS });
+  if (!res.ok) throw new Error(`Luma lookup failed: ${res.status}`);
+  const body = (await res.json()) as { kind?: string; data?: LumaEntry };
+  if (body.kind !== "event" || !body.data?.event) throw new Error("not an event page");
+  return toLumaEvent(body.data);
+}
+
+// Upcoming in-person events near a point, without descriptions (fetch those per event).
+export async function fetchNearbyEvents(lat: number, lng: number): Promise<LumaEvent[]> {
+  const res = await fetch(
+    `https://api.lu.ma/discover/get-paginated-events?latitude=${lat}&longitude=${lng}&pagination_limit=50`,
+    { headers: HEADERS },
+  );
+  if (!res.ok) throw new Error(`Luma discover failed: ${res.status}`);
+  const body = (await res.json()) as { entries?: LumaEntry[] };
+  return (body.entries ?? [])
+    .map(toLumaEvent)
+    .filter((e) => e.is_public && e.lat != null && e.lng != null);
 }
