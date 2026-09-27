@@ -6,7 +6,7 @@ import { useT } from "@/lib/i18n";
 
 export type Review = {
   id: string;
-  match_id: string;
+  buddy_request_id: string;
   reviewer_id: string;
   reviewee_id: string;
   stars: number;
@@ -21,27 +21,22 @@ export function Stars({ n }: { n: number }) {
 export function Rating({ avg, count }: { avg?: number; count?: number }) {
   if (!count || avg === undefined) return null;
   return (
-    <span className="ml-1 text-xs text-cnx-muted">
+    <span className="ml-1 text-xs font-normal text-cnx-muted">
       {avg.toFixed(1)}★ ({count})
     </span>
   );
 }
 
+// Required after the event: stars plus a few words, or a one-tap no-show.
 export default function MatchReview({
-  matchId,
+  requestId,
   meId,
   other,
-  eventStarted,
-  myReview,
-  theirReview,
   onDone,
 }: {
-  matchId: string;
+  requestId: string;
   meId: string;
   other: { id: string; display_name: string };
-  eventStarted: boolean;
-  myReview: Review | null;
-  theirReview: Review | null;
   onDone: () => void;
 }) {
   const supabase = createClient();
@@ -50,80 +45,55 @@ export default function MatchReview({
   const [text, setText] = useState("");
   const [busy, setBusy] = useState(false);
 
-  async function submit(s: number, auto: boolean) {
-    if (!s) return;
+  async function submit(s: number, noShow: boolean) {
     setBusy(true);
     await supabase.from("reviews").insert({
-      match_id: matchId,
+      buddy_request_id: requestId,
       reviewer_id: meId,
       reviewee_id: other.id,
       stars: s,
-      text: auto ? null : text || null,
-      auto_no_show: auto,
+      text: noShow ? null : text.trim(),
+      auto_no_show: noShow,
     });
     setBusy(false);
     onDone();
   }
 
-  if (!eventStarted)
-    return <p className="text-xs text-cnx-muted">{t("reviewsLocked")}</p>;
-
-  if (myReview)
-    return (
-      <div className="text-xs text-cnx-muted">
-        <p>
-          {t("youGave")}: <Stars n={myReview.stars} />
-          {myReview.auto_no_show && ` ${t("noShowMark")}`}
-          {myReview.text && ` — “${myReview.text}”`}
-        </p>
-        {theirReview ? (
-          <p>
-            {other.display_name} {t("gaveYou")}: <Stars n={theirReview.stars} />
-            {theirReview.auto_no_show && ` ${t("noShowMark")}`}
-            {theirReview.text && ` — “${theirReview.text}”`}
-          </p>
-        ) : (
-          <p className="text-cnx-muted/70">{other.display_name} {t("hasntReviewed")}</p>
-        )}
-      </div>
-    );
-
   return (
-    <div className="mt-1 space-y-1 text-sm">
-      <div className="flex items-center gap-1">
+    <div className="space-y-2">
+      <div className="flex items-center justify-between">
+        <p className="text-sm font-semibold">{t("secRate", { name: other.display_name })}</p>
+        <button disabled={busy} onClick={() => submit(1, true)} className="text-xs text-cnx-danger underline">
+          {t("noShowBtn")}
+        </button>
+      </div>
+      <div className="flex gap-1">
         {[1, 2, 3, 4, 5].map((n) => (
           <button
             key={n}
             onClick={() => setStars(n)}
-            className={`text-lg ${stars >= n ? "text-amber-500" : "text-gray-300"}`}
+            aria-label={`${n}★`}
+            className={`text-3xl leading-none ${stars >= n ? "text-amber-500" : "text-cnx-line"}`}
           >
             ★
           </button>
         ))}
       </div>
-      <textarea
-        className="cnx-input text-xs"
-        rows={2}
-        placeholder={`${t("howWas")} ${other.display_name}? (optional)`}
-        value={text}
-        onChange={(e) => setText(e.target.value)}
-      />
-      <div className="flex gap-2">
-        <button
-          disabled={busy || !stars}
-          onClick={() => submit(stars, false)}
-          className="cnx-btn px-2 py-1 text-xs"
-        >
-          {t("leaveReview")}
-        </button>
-        <button
-          disabled={busy}
-          onClick={() => submit(1, true)}
-          className="cnx-btn-danger"
-        >
-          {t("noShowBtn")}
-        </button>
-      </div>
+      {stars > 0 && (
+        <div className="flex gap-2">
+          <input
+            className="cnx-input text-sm"
+            placeholder={t("howWas")}
+            maxLength={300}
+            value={text}
+            onChange={(e) => setText(e.target.value)}
+            autoFocus
+          />
+          <button disabled={busy || text.trim().length < 2} onClick={() => submit(stars, false)} className="cnx-btn shrink-0 text-sm">
+            {t("leaveReview")}
+          </button>
+        </div>
+      )}
     </div>
   );
 }

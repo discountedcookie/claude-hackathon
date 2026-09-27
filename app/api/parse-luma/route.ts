@@ -1,91 +1,52 @@
-import { createClient } from "@/lib/supabase/server";
-import { normalizeLumaUrl, fetchLumaEvent } from "@/lib/luma";
-import { generateSummaries } from "@/lib/summaries";
+import { after } from "next/server";
+import { z } from "zod";
+import { fetchLumaEvent, normalizeLumaUrl } from "@/lib/luma";
+import { saveEvents, summarizeEvent } from "@/lib/summaries";
+import { takeQuota } from "@/lib/supabase/admin";
+import { createClient, getUserId } from "@/lib/supabase/server";
 
+export const maxDuration = 120;
+
+// A pasted Luma link: save the event (if free and public) and mark the caller as going.
 export async function POST(request: Request) {
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) return Response.json({ error: "sign in first" }, { status: 401 });
+  const userId = await getUserId(supabase);
+  if (!userId) return Response.json({ error: "sign in first" }, { status: 401 });
 
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("role")
-    .eq("id", user.id)
-    .single();
-  if (profile?.role !== "foreigner")
-    return Response.json({ error: "foreigners only" }, { status: 403 });
+  const body = z
+    .object({ url: z.string().max(300), note: z.string().trim().max(200).optional() })
+    .safeParse(await request.json().catch(() => null));
+  if (!body.success) return Response.json({ error: "bad request" }, { status: 400 });
 
   let url: string;
-  let mission: string | null = null;
   try {
-    const body = await request.json();
-    url = normalizeLumaUrl(String(body.url ?? ""));
-    mission = body.mission ? String(body.mission).slice(0, 500) : null;
+    url = normalizeLumaUrl(body.data.url);
   } catch (e) {
     return Response.json({ error: (e as Error).message }, { status: 400 });
   }
 
-  let parsed;
+  if (!(await takeQuota(`paste:${userId}`, "1 hour", 10)))
+    return Response.json({ error: "rate_limited" }, { status: 429 });
+
+  let ev;
   try {
-    parsed = await fetchLumaEvent(url);
-  } catch (e) {
-    return Response.json(
-      { error: `could not read Luma page (private event?): ${(e as Error).message}` },
-      { status: 422 },
+    ev = await fetchLumaEvent(url);
+  } catch {
+    return Response.json({ error: "private_or_unreadable" }, { status: 422 });
+  }
+  if (!ev.is_public) return Response.json({ error: "private_or_unreadable" }, { status: 422 });
+  if (!ev.is_free) return Response.json({ error: "free_only" }, { status: 422 });
+
+  const [saved] = await saveEvents([ev]);
+  if (!saved.summary_en) after(() => summarizeEvent(saved));
+
+  const { error } = await supabase
+    .from("attendances")
+    .upsert(
+      { event_id: saved.id, user_id: userId, note: body.data.note || null },
+      { onConflict: "event_id,user_id", ignoreDuplicates: true },
     );
-  }
+  if (error) return Response.json({ error: error.message }, { status: 400 });
 
-  const { data: event, error: upsertError } = await supabase
-    .from("events")
-    .upsert(
-      {
-        luma_url: parsed.luma_url,
-        title: parsed.title,
-        description_en: parsed.description,
-        starts_at: parsed.starts_at,
-        location: parsed.location,
-        image_url: parsed.image_url,
-      },
-      { onConflict: "luma_url" },
-    )
-    .select()
-    .single();
-  if (upsertError || !event)
-    return Response.json({ error: upsertError?.message ?? "event upsert failed" }, { status: 500 });
-
-  if (!event.description_th) {
-    try {
-      const s = await generateSummaries({
-        kind: "event",
-        title: event.title,
-        description: event.description_en,
-        extra: `${event.location ?? ""} ${event.starts_at ?? ""}`,
-      });
-      if (s) {
-        event.description_th = s.th;
-        event.description_zh = s.zh;
-        await supabase
-          .from("events")
-          .update({ description_th: s.th, description_zh: s.zh })
-          .eq("id", event.id);
-      }
-    } catch {
-      // non-fatal: summaries can be backfilled later
-    }
-  }
-
-  const { data: offer, error: offerError } = await supabase
-    .from("offers")
-    .upsert(
-      { event_id: event.id, foreigner_id: user.id, mission },
-      { onConflict: "event_id,foreigner_id" },
-    )
-    .select()
-    .single();
-  if (offerError)
-    return Response.json({ error: offerError.message }, { status: 500 });
-
-  return Response.json({ event, offer });
+  return Response.json({ event: { id: saved.id, title: saved.title } });
 }

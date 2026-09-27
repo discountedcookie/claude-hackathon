@@ -23,8 +23,9 @@
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  /* Noto everywhere: Latin, loopless Thai, Simplified Chinese; system fonts only as fallback. */
+  --font-sans: var(--font-noto), var(--font-noto-thai), var(--font-noto-sc), -apple-system, BlinkMacSystemFont, "Segoe UI",
+    "Thonburi", "PingFang SC", "Microsoft YaHei", sans-serif;
 }
 
 @layer components {
@@ -35,10 +36,16 @@
     @apply w-full rounded-xl border border-[#dce5d4] bg-white px-3 py-2.5 text-cnx-ink placeholder:text-[#9aa59b] focus:outline-2 focus:outline-cnx-green;
   }
   .cnx-btn {
-    @apply rounded-xl bg-cnx-green px-4 py-2.5 font-semibold text-white transition hover:brightness-105 disabled:opacity-50;
+    @apply inline-flex items-center justify-center gap-1.5 rounded-xl bg-cnx-green px-4 py-2.5 font-semibold text-white transition hover:brightness-105 disabled:bg-cnx-line disabled:text-cnx-muted;
   }
   .cnx-btn-light {
-    @apply rounded-xl border border-cnx-line bg-white px-3 py-2 text-cnx-green transition hover:bg-cnx-pale;
+    @apply inline-flex items-center justify-center gap-1.5 rounded-xl border border-cnx-line bg-white px-3 py-2 text-cnx-green transition hover:bg-cnx-pale disabled:text-cnx-muted;
+  }
+  .cnx-tag {
+    @apply inline-flex items-center rounded-full bg-cnx-pale px-2.5 py-0.5 text-xs text-[#5f715f];
+  }
+  .cnx-tag-warn {
+    @apply bg-cnx-danger-bg text-cnx-orange;
   }
   .cnx-chip {
     @apply rounded-xl bg-[#eaf0e6] px-4 py-2.5 text-sm text-[#5f715f] transition hover:bg-[#e3ebdb];
@@ -54,8 +61,18 @@
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+  font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
+}
+
+/* Long descriptions: looped Thai reads more easily in paragraphs. */
+.font-reading {
+  font-family: var(--font-noto), var(--font-noto-thai-looped), var(--font-noto-sc), sans-serif;
+}
+
+/* Thai stacks tone marks above and vowels below the line: give it room (unlayered, so it beats text-* leading). */
+:lang(th) :is(p, span, a, li, dt, dd, button, input, textarea, h1, h2, h3, h4) {
+  line-height: 1.65;
 }
 
 .buddy-wave { transform-box: fill-box; transform-origin: 50% 85%; }
