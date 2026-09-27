@@ -18,7 +18,7 @@ type Recognition = {
 };
 
 // Dictation with the browser's own speech recognition (Chrome, Safari); hidden where it isn't available.
-export default function VoiceInput({ onText, disabled }: { onText: (text: string) => void; disabled?: boolean }) {
+export default function VoiceInput({ onText, disabled, className = "" }: { onText: (text: string) => void; disabled?: boolean; className?: string }) {
   const t = useT();
   const { lang } = useLang();
   const [supported, setSupported] = useState(false);
@@ -57,7 +57,9 @@ export default function VoiceInput({ onText, disabled }: { onText: (text: string
       disabled={disabled}
       aria-label={t("voice")}
       aria-pressed={listening}
-      className={`shrink-0 ${listening ? "cnx-btn animate-pulse" : "cnx-btn-light"}`}
+      className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full transition ${
+        listening ? "animate-pulse bg-cnx-orange text-white" : "text-cnx-muted hover:bg-cnx-pale hover:text-cnx-ink"
+      } ${className}`}
     >
       <Icon name="mic" className="h-5 w-5" />
     </button>

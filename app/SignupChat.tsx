@@ -1,7 +1,7 @@
 "use client";
 
-import Spinner, { AiWorking } from "./Spinner";
-import { useState } from "react";
+import Spinner from "./Spinner";
+import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { useLang, useT } from "@/lib/i18n";
@@ -33,9 +33,24 @@ export default function SignupChat({ transcript = [], draft: initialDraft = null
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [guest, setGuest] = useState(false);
+  const endRef = useRef<HTMLDivElement>(null);
+  const boxRef = useRef<HTMLTextAreaElement>(null);
 
-  async function send(e: React.FormEvent) {
-    e.preventDefault();
+  // Keep the newest message (or the confirm step) in view, like a chat app.
+  useEffect(() => {
+    if (lines.length || draft) endRef.current?.scrollIntoView({ behavior: "smooth", block: "nearest" });
+  }, [lines.length, busy, draft]);
+
+  // The input grows with the text, up to about five lines.
+  useEffect(() => {
+    const el = boxRef.current;
+    if (!el) return;
+    el.style.height = "auto";
+    el.style.height = `${Math.min(el.scrollHeight, 140)}px`;
+  }, [text]);
+
+  async function send(e?: React.FormEvent) {
+    e?.preventDefault();
     const message = text.trim();
     if (!message || busy) return;
     setBusy(true);
@@ -109,7 +124,7 @@ export default function SignupChat({ transcript = [], draft: initialDraft = null
       {[{ role: "assistant", text: t("onbHello") } as Line, ...lines].map((l, i) => (
         <p
           key={i}
-          className={`max-w-[88%] whitespace-pre-line rounded-2xl px-4 py-2.5 text-[15px] ${
+          className={`cnx-msg-in max-w-[88%] whitespace-pre-line rounded-2xl px-4 py-2.5 text-[15px] leading-relaxed ${
             l.role === "assistant" ? "rounded-tl-sm bg-cnx-pale" : "ml-auto rounded-tr-sm bg-cnx-green text-white"
           }`}
         >
@@ -117,28 +132,47 @@ export default function SignupChat({ transcript = [], draft: initialDraft = null
         </p>
       ))}
       {busy && !draft && (
-        <p className="w-fit rounded-2xl rounded-tl-sm bg-cnx-pale px-4 py-2.5">
-          <AiWorking label={t("thinking")} />
+        <p role="status" className="cnx-msg-in flex w-fit items-center gap-1 rounded-2xl rounded-tl-sm bg-cnx-pale px-4 py-3.5">
+          <span className="sr-only">{t("thinking")}</span>
+          <span className="cnx-dot" />
+          <span className="cnx-dot [animation-delay:.15s]" />
+          <span className="cnx-dot [animation-delay:.3s]" />
         </p>
       )}
 
       {!draft ? (
-        <form onSubmit={send} className="flex gap-2">
-          <input
-            className="cnx-input"
+        <form
+          onSubmit={send}
+          className="flex items-end gap-1 rounded-3xl border border-cnx-line bg-white py-1.5 pl-4 pr-1.5 shadow-sm transition focus-within:border-cnx-green focus-within:shadow-md"
+        >
+          <textarea
+            ref={boxRef}
+            rows={1}
+            className="max-h-36 flex-1 resize-none bg-transparent py-1.5 text-[15px] leading-relaxed outline-none placeholder:text-[#9aa59b]"
             placeholder={t("onbPh")}
             maxLength={400}
             value={text}
             onChange={(e) => setText(e.target.value)}
+            onKeyDown={(e) => {
+              // Enter sends, Shift+Enter makes a new line (not while an IME is composing Thai/Chinese).
+              if (e.key === "Enter" && !e.shiftKey && !e.nativeEvent.isComposing) {
+                e.preventDefault();
+                send();
+              }
+            }}
             disabled={busy}
           />
           <VoiceInput onText={setText} disabled={busy} />
-          <button disabled={busy || !text.trim()} className="cnx-btn shrink-0" aria-label={t("send")}>
-            <Icon name="send" className="h-5 w-5" />
+          <button
+            disabled={busy || !text.trim()}
+            aria-label={t("send")}
+            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-cnx-green text-white transition hover:brightness-105 disabled:bg-cnx-line disabled:text-cnx-muted"
+          >
+            <Icon name="send" className="h-[18px] w-[18px]" />
           </button>
         </form>
       ) : (
-        <form onSubmit={finish} className="space-y-4 rounded-2xl border border-cnx-line p-4">
+        <form onSubmit={finish} className="cnx-msg-in space-y-4 rounded-2xl border border-cnx-line bg-white p-4">
           <p className="font-semibold">{t("onbConfirm")}</p>
           <label className="block space-y-1">
             <span className="text-xs font-semibold text-cnx-muted">{t("onbName")}</span>
@@ -204,6 +238,7 @@ export default function SignupChat({ transcript = [], draft: initialDraft = null
         </form>
       )}
       {error && <p className="text-sm text-cnx-danger">{error}</p>}
+      <div ref={endRef} />
     </div>
   );
 }

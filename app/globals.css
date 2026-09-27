@@ -89,6 +89,12 @@ body {
 @keyframes cnx-dialog-in { from { opacity: 0; translate: 0 12px; } to { opacity: 1; translate: 0 0; } }
 @keyframes cnx-dialog-out { from { opacity: 1; } to { opacity: 0; } }
 
+/* Chat: messages slide in, typing dots. */
+.cnx-msg-in { animation: cnx-msg-in .22s cubic-bezier(.22, 1, .36, 1) both; }
+@keyframes cnx-msg-in { from { opacity: 0; translate: 0 6px; } to { opacity: 1; translate: 0 0; } }
+.cnx-dot { width: 6px; height: 6px; border-radius: 9999px; background: var(--color-cnx-muted); animation: cnx-dot 1s ease-in-out infinite; }
+@keyframes cnx-dot { 0%, 80%, 100% { opacity: .3; translate: 0 0; } 40% { opacity: 1; translate: 0 -3px; } }
+
 @keyframes buddy-wave { 0%,100% { transform: rotate(0) } 20% { transform: rotate(-17deg) } 40% { transform: rotate(12deg) } 60% { transform: rotate(-13deg) } 80% { transform: rotate(7deg) } }
 @keyframes buddy-blink { 0%,35%,48%,100% { transform: scaleY(1) } 40% { transform: scaleY(.1) } }
 @keyframes buddy-nod { 0%,100% { transform: rotate(0) } 40% { transform: rotate(5deg) } 70% { transform: rotate(-3deg) } }
