@@ -29,13 +29,10 @@ export type FeedEvent = {
   facts?: Record<Lang, string[]> | null;
 };
 
-// Current intro shape is { meet, openers }; rows written before that have { meet_suggestion, icebreakers }.
-export type IntroCard = {
-  meet?: string;
-  openers?: string[];
-  meet_suggestion?: string;
-  icebreakers?: string[];
-};
+// Intro card per language: { en, th, zh } of { meet, openers }. Older rows are a single card, sometimes
+// with the first-draft field names { meet_suggestion, icebreakers }.
+type Card = { meet?: string; openers?: string[]; meet_suggestion?: string; icebreakers?: string[] };
+export type IntroCard = Card & Partial<Record<Lang, Card>>;
 
 export type BuddyRequest = {
   id: string;

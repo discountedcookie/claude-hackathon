@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { askJson, data, LANG_NAMES, list, str } from "@/lib/claude";
+import { askJson, data, list, str } from "@/lib/claude";
 import { loadBuddyContext } from "@/lib/buddies";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient, getUserId } from "@/lib/supabase/server";
@@ -10,7 +10,9 @@ const Card = z.object({
     "Up to two questions, each naming one specific thing from the OTHER person's interests, offers, wants or event note. Empty if nothing specific.",
   ),
 });
-const Intro = z.object({ for_sender: Card, for_recipient: Card });
+// Each person's card in all three UI languages, so it follows their language switch.
+const Cards = z.object({ en: Card, th: Card, zh: Card });
+const Intro = z.object({ for_sender: Cards, for_recipient: Cards });
 
 export async function POST(request: Request) {
   const supabase = await createClient();
@@ -33,13 +35,12 @@ export async function POST(request: Request) {
 
   const ctx = await loadBuddyContext(body.data.request_id);
   if (!ctx) return Response.json({ ok: true });
-  const langName = (l: string) => LANG_NAMES[l as keyof typeof LANG_NAMES] ?? LANG_NAMES.en;
 
   try {
     const intro = await askJson({
       system: `Two people just agreed to go to an event together. For each of them write where to meet and up to two openers about the other person.
 Openers must name something specific from the other person's profile or note. Never ask "what brought you here" or anything you could ask a stranger; if you can't be specific, return fewer openers. No advice, no cultural notes, no exclamation marks.
-Write for_sender entirely in ${langName(ctx.from.language)} and for_recipient entirely in ${langName(ctx.to.language)}.`,
+Write each card in English (en), Thai (th) and Simplified Chinese (zh): the same content, natural in each language.`,
       prompt: [
         data("event", ctx.event),
         data("person", { role: "sender", ...ctx.from, id: undefined }),

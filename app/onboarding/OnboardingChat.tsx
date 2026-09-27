@@ -1,9 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
-import { Lang, LangProvider, LangSwitcher, useT } from "@/lib/i18n";
+import { FIRST_MESSAGE_KEY, Lang, LangProvider, LangSwitcher, useT } from "@/lib/i18n";
 import BuddyMascot from "../BuddyMascot";
 import Icon from "../Icon";
 
@@ -21,9 +21,7 @@ function Chat({ transcript, turns }: { transcript: Line[]; turns: number }) {
   const [error, setError] = useState<string | null>(null);
   const [done, setDone] = useState(false);
 
-  async function send(e: React.FormEvent) {
-    e.preventDefault();
-    const message = text.trim();
+  async function sendMessage(message: string) {
     if (!message) return;
     setBusy(true);
     setError(null);
@@ -50,6 +48,25 @@ function Chat({ transcript, turns }: { transcript: Line[]; turns: number }) {
       setTimeout(() => router.push("/events"), 2500);
     }
   }
+
+  async function send(e: React.FormEvent) {
+    e.preventDefault();
+    await sendMessage(text.trim());
+  }
+
+  // An answer typed on the landing page before sign-up is sent as the first message.
+  const sentFirst = useRef(false);
+  useEffect(() => {
+    if (sentFirst.current || transcript.length > 0) return;
+    sentFirst.current = true;
+    let first: string | null = null;
+    try {
+      first = localStorage.getItem(FIRST_MESSAGE_KEY);
+      localStorage.removeItem(FIRST_MESSAGE_KEY);
+    } catch {}
+    if (first) sendMessage(first);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- once on mount
+  }, []);
 
   return (
     <main className="mx-auto w-full flex min-h-screen max-w-lg flex-col gap-4 p-4 sm:p-6">

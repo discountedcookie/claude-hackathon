@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { Lang, LangProvider, LangSwitcher, useT } from "@/lib/i18n";
 import type { Point } from "../../MapView";
+import Logo from "../../Logo";
 
 const MapView = dynamic(() => import("../../MapView"), { ssr: false });
 
@@ -39,7 +40,9 @@ function Live({ token, session }: { token: string; session: Session | null }) {
   return (
     <main className="mx-auto w-full max-w-lg space-y-4 p-4 sm:p-6">
       <header className="flex items-center justify-between">
-        <h1 className="text-lg font-extrabold">With · CNX</h1>
+        <h1 className="text-lg">
+          <Logo />
+        </h1>
         <LangSwitcher />
       </header>
       {ended || !session ? (

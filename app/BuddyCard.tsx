@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
-import { useT } from "@/lib/i18n";
+import { useLang, useT } from "@/lib/i18n";
 import Icon from "./Icon";
 import MatchReview, { Rating, Review, Stars } from "./MatchReview";
 import SafetyShare, { shareWindowOpen } from "./SafetyShare";
@@ -31,6 +31,7 @@ export default function BuddyCard({
   onChange: () => void;
 }) {
   const t = useT();
+  const { lang } = useLang();
   const supabase = createClient();
   const [followUp, setFollowUp] = useState<FollowUp | null>(null);
   const [drafting, setDrafting] = useState(false);
@@ -38,7 +39,8 @@ export default function BuddyCard({
   const [copied, setCopied] = useState(false);
   const [now] = useState(() => Date.now());
 
-  const intro = req.icebreakers?.[meId];
+  const stored = req.icebreakers?.[meId];
+  const intro = stored?.[lang] ?? stored?.en ?? stored;
   const meet = intro?.meet ?? intro?.meet_suggestion;
   const openers = intro?.openers ?? intro?.icebreakers ?? [];
   const started = !!ev.starts_at && new Date(ev.starts_at).getTime() < now;

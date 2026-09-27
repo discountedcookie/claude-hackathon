@@ -148,6 +148,14 @@ export const strings: Dict = {
   summaryPending: { en: "Translating…", th: "กำลังแปล…", zh: "翻译中…" },
   original: { en: "Original", th: "ต้นฉบับ", zh: "原文" },
   noProjects: { en: "No projects yet.", th: "ยังไม่มีโปรเจกต์", zh: "暂时还没有项目" },
+  landTitle: { en: "Find an event, and someone to go with.", th: "หางานที่อยากไป และเพื่อนที่จะไปด้วยกัน", zh: "找个活动，再找个人一起去。" },
+  landTag: { en: "ไปด้วยกัน · “let’s go together”", th: "ไปด้วยกัน · “let’s go together”", zh: "ไปด้วยกัน · “一起去吧”" },
+  landSub: { en: "A buddy for your first community event in Chiang Mai, in English, Thai or Chinese.", th: "มีเพื่อนไปด้วยในงานคอมมูนิตี้ครั้งแรกที่เชียงใหม่ ใช้ได้ทั้งภาษาอังกฤษ ไทย และจีน", zh: "在清迈参加第一次社区活动时，有人陪你一起去。支持英文、泰文和中文。" },
+  landStart: { en: "Get started", th: "เริ่มเลย", zh: "开始使用" },
+  landStep1: { en: "Find a free event near you", th: "หางานฟรีใกล้คุณ", zh: "找一个附近的免费活动" },
+  landStep2: { en: "Ask someone who’s going", th: "ชวนคนที่จะไปงานเดียวกัน", zh: "邀请同样要去的人" },
+  landStep3: { en: "Get each other’s LINE", th: "ได้ LINE ของกันและกัน", zh: "互换 LINE" },
+  landStep4: { en: "Go together", th: "ไปด้วยกัน", zh: "一起去" },
 };
 
 const LangContext = createContext<{ lang: Lang; setLang: (l: Lang) => void; userId: string | null }>({
@@ -158,6 +166,22 @@ const LangContext = createContext<{ lang: Lang; setLang: (l: Lang) => void; user
 
 // A language picked before signing in (login page) is remembered here and applied to the profile at sign-in.
 export const PICKED_LANG_KEY = "cnx-lang";
+
+// Before sign-in: the language picked earlier on this device, else the browser's language if it's Thai or Chinese.
+export function detectLang(): Lang | null {
+  let picked: string | null = null;
+  try {
+    picked = localStorage.getItem(PICKED_LANG_KEY);
+  } catch {}
+  if (picked === "en" || picked === "th" || picked === "zh") return picked;
+  const browser = navigator.language.toLowerCase();
+  if (browser.startsWith("th")) return "th";
+  if (browser.startsWith("zh")) return "zh";
+  return null;
+}
+
+// The first answer typed on the landing page, sent as the first onboarding message after sign-up.
+export const FIRST_MESSAGE_KEY = "cnx-first-message";
 
 export function LangProvider({
   initial,

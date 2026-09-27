@@ -3,7 +3,9 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
-import { Lang, LangProvider, LangSwitcher, PICKED_LANG_KEY, useLang, useT } from "@/lib/i18n";
+import Link from "next/link";
+import { detectLang, LangProvider, LangSwitcher, PICKED_LANG_KEY, useLang, useT } from "@/lib/i18n";
+import Logo from "../Logo";
 import BuddyMascot from "../BuddyMascot";
 
 // Supabase auth errors come in English; map the common ones.
@@ -19,19 +21,16 @@ function LoginForm() {
   const t = useT();
   const { lang, setLang } = useLang();
 
-  // Start in the language picked here before, else the browser's language if it's Thai or Chinese.
+  const [mode, setMode] = useState<"signin" | "signup">("signin");
+
+  // Language picked earlier / browser language; "Get started" on the landing page opens sign-up.
   useEffect(() => {
-    let picked: string | null = null;
-    try {
-      picked = localStorage.getItem(PICKED_LANG_KEY);
-    } catch {}
-    const browser = navigator.language.toLowerCase();
-    if (picked === "en" || picked === "th" || picked === "zh") setLang(picked as Lang);
-    else if (browser.startsWith("th")) setLang("th");
-    else if (browser.startsWith("zh")) setLang("zh");
+    const l = detectLang();
+    if (l) setLang(l);
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- reads the URL once on mount
+    if (new URLSearchParams(window.location.search).get("mode") === "signup") setMode("signup");
     // eslint-disable-next-line react-hooks/exhaustive-deps -- once on mount
   }, []);
-  const [mode, setMode] = useState<"signin" | "signup">("signin");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [displayName, setDisplayName] = useState("");
@@ -90,7 +89,11 @@ function LoginForm() {
         <LangSwitcher />
       </div>
       <BuddyMascot className="mx-auto h-28 w-40" />
-      <h1 className="flex h-9 items-center text-2xl font-extrabold tracking-tight">With · CNX</h1>
+      <h1 className="flex h-9 items-center">
+        <Link href="/" aria-label="With CNX">
+          <Logo className="text-2xl" />
+        </Link>
+      </h1>
       <p className="flex h-7 items-center text-sm text-cnx-muted">
         {mode === "signin" ? t("signIn") : t("signUp")} —{" "}
         <button className="underline" onClick={() => setMode(mode === "signin" ? "signup" : "signin")}>
