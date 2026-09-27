@@ -31,11 +31,12 @@
   button.type = 'button';
   button.className = 'pwa-install';
   button.id = 'pwa-install';
-  document.querySelector('.demo-bar').append(button);
+  document.querySelector('.topbar').append(button);
 
   function renderButton() {
     button.hidden = standalone() && !registration?.waiting;
     const key = registration?.waiting ? 'update' : deferredPrompt ? 'install' : 'add';
+    button.title = language === 'th' ? copy[key][2] : language === 'zh' ? copy[key][0] : language === 'en' ? copy[key][1] : copy[key][0] + ' / ' + copy[key][1];
     button.innerHTML = '<svg viewBox="0 0 20 20" aria-hidden="true"><path d="M10 2v10m-4-4 4 4 4-4M3 12v5h14v-5" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg><span>' + text(key) + '</span>';
   }
 

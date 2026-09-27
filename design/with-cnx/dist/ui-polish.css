@@ -1,0 +1,209 @@
+/* Local visual study. Shared component geometry, language-specific reading rhythm.
+   Unmodified LINE Seed fonts © LY Corporation. SIL OFL 1.1; see fonts/OFL.txt. */
+@font-face{font-family:"LINE Seed EN";src:url('./fonts/LINESeedSans_W_Rg.woff2') format('woff2');font-weight:400;font-style:normal;font-display:swap}
+@font-face{font-family:"LINE Seed EN";src:url('./fonts/LINESeedSans_W_Bd.woff2') format('woff2');font-weight:700;font-style:normal;font-display:swap}
+@font-face{font-family:"LINE Seed TH";src:url('./fonts/LINESeedSansTH_W_Rg.woff2') format('woff2');font-weight:400;font-style:normal;font-display:swap}
+@font-face{font-family:"LINE Seed TH";src:url('./fonts/LINESeedSansTH_W_Bd.woff2') format('woff2');font-weight:700;font-style:normal;font-display:swap}
+:root{--font-ui:"LINE Seed EN","LINE Seed TH",-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC",sans-serif;--font-th:"LINE Seed TH","LINE Seed EN","Thonburi","Leelawadee UI",sans-serif;--ease-out:cubic-bezier(.22,1,.36,1)}
+body{font-family:var(--font-ui);line-height:1.55}
+.en{line-height:1.5}
+.th,[lang=th],.local-name,.hello-bubble{font-family:var(--font-th)}
+button,input,select,textarea{font-family:inherit}
+.topbar{gap:20px}
+.nav button{font-size:15px}
+.lang{min-height:44px;font-size:14px;padding-inline:12px}
+.intro h1{letter-spacing:-.035em}
+body[data-lang=en] .intro h1 .en{font-size:42px;line-height:1.12;letter-spacing:-.035em;font-weight:700}
+.intro .eyebrow{font-size:11px;letter-spacing:.12em}
+.hero-note,.hero-note .en{font-size:14px;line-height:1.55}
+.eyebrow .local-name{font-family:var(--font-th);font-size:13px;line-height:1.65}
+.mascot-hint,.mascot-hint .zh,.mascot-hint .en{font-size:12px;line-height:1.5;letter-spacing:0}
+.hello-bubble{font-size:13px;line-height:1.65;padding:7px 13px}
+.chip{font-size:14px;line-height:1.4;padding:10px 16px}
+.chip .en{font-size:12px;line-height:1.4}
+.section-label{font-size:13px}
+.section-hint{font-size:12px;letter-spacing:0}
+.event-card{padding:24px;box-shadow:0 3px 14px #26453603;animation:none;transition:border-color .18s,box-shadow .18s}
+.card-summary{gap:16px}
+.date-tile{flex-basis:56px;width:56px;padding:12px 5px}
+.date-tile b{font-size:29px;line-height:1.1;letter-spacing:-.04em}
+.date-tile span{font-size:11px;line-height:1.4;letter-spacing:.07em;margin-top:5px}
+.date-tile::after{display:none}
+.event-time{font-size:12px;line-height:1.5;margin-bottom:8px;align-items:flex-start}
+.free,.free .en{font-size:12px;line-height:1.5}
+.summary-copy h2{font-size:21px;line-height:1.35;letter-spacing:-.025em;font-weight:700;margin-bottom:10px;overflow-wrap:break-word}
+.summary-copy h2 .en{font-size:15px;line-height:1.45}
+.place{font-size:13px;line-height:1.5;gap:5px}
+.place svg{width:14px;height:14px;flex-basis:14px}
+.card-body{margin-top:22px}
+.card-body>.buddy{padding-top:19px}
+.buddy{gap:12px}
+.avatar{height:42px;width:42px;flex-basis:42px;font-size:13px;box-shadow:none;border:0}
+.buddy-info strong{font-size:16px;line-height:1.4;font-weight:700}
+.buddy-info small{font-size:12px;line-height:1.5;margin-top:3px;overflow-wrap:break-word}
+.seats{font-size:12px;line-height:1.4;padding:5px 8px;background:#f3f6f0}
+.seats .en{font-size:11px;line-height:1.4}
+.card-action{gap:12px;margin-top:21px}
+.buddy-cue{font-size:13px;line-height:1.5}
+.buddy-cue .en{font-size:12px;line-height:1.5}
+.card-action .btn{font-size:14px;min-height:48px;padding:11px 14px;gap:10px}
+.card-action .btn .en{font-size:12px}
+.card-action .action-arrow{background:none;border-radius:0;width:17px;height:20px;font-size:18px}
+.btn{font-size:15px;line-height:1.4;font-weight:700;box-shadow:none;transition:background .16s,transform .14s var(--ease-out),box-shadow .16s}
+.btn.small{font-size:14px}
+.btn .en{font-size:12px;line-height:1.5;font-weight:400}
+.btn:active:not(:disabled),.chip:active,.mobile-nav button:active{transform:scale(.985)}
+.demo-bar,.demo-label .inline-bi .en{font-size:12px;line-height:1.5}
+.demo-badge{font-size:10px}
+.demo-bar{justify-content:flex-end;padding-top:10px}
+.demo-label{margin-right:auto;color:#916139}
+.demo-reset{margin-top:18px}
+.demo-reset .btn{font-size:12px;font-weight:400;min-height:44px}
+.intro{margin-top:12px}
+.help-note,.help-note .en,.footer,.footer .en{font-size:12px;line-height:1.6}
+.plan-card{padding:26px}
+.plan-top{align-items:flex-start;gap:12px}
+.plan-top .eyebrow{font-size:12px;line-height:1.6;letter-spacing:.07em;padding-top:5px}
+.status{font-size:12px;line-height:1.5;padding:5px 9px;text-align:center}
+.status.confirmed::before{content:'✓';position:absolute;left:9px;top:50%;transform:translateY(-50%)}
+.status.confirmed{background:#eaf2e4;position:relative;padding-left:25px}
+.plan-card h2{font-size:23px;line-height:1.35;letter-spacing:-.025em;margin:20px 0 12px;overflow-wrap:break-word}
+.plan-card h2 .en{font-size:16px;line-height:1.5}
+.plan-meta{font-size:14px;line-height:1.6}
+.plan-message{background:transparent;padding:0 0 0 14px;border-left:2px solid #dbe5d7;border-radius:0;font-size:13px}
+.plan-message>div{margin-top:5px;font-size:15px}
+.meeting{background:#f5f7f2;border:0;gap:16px;padding:17px;border-radius:14px}
+.meeting>div{padding:0;font-size:15px;line-height:1.6}
+.meeting>div+div{border:0}
+.meeting small{font-size:12px;margin-bottom:6px}
+.demo-mini{font-size:12px;line-height:1.6;margin-top:18px}
+dialog{border-radius:24px;box-shadow:0 20px 70px #163e2c25}
+dialog[open]{animation:polish-dialog-in .24s var(--ease-out) both}
+dialog[open]::backdrop{animation:polish-backdrop-in .18s ease-out both;backdrop-filter:blur(4px)}
+dialog.is-closing[open]{animation:polish-dialog-out .14s ease-in both;pointer-events:none}
+dialog.is-closing[open]::backdrop{animation:polish-backdrop-out .14s ease-in both}
+.dialog-header{padding:24px 28px 20px;align-items:center}
+.dialog-header h2{font-size:24px;line-height:1.35;letter-spacing:-.025em;margin:0;overflow-wrap:break-word}
+.dialog-header h2 .en{font-size:16px;line-height:1.5;margin-top:5px}
+.dialog-body{padding:24px 28px 28px}
+.dialog-footer{padding:16px 28px 20px;box-shadow:none}
+.dialog-actions>.btn{min-height:52px}
+.close{background:transparent;border-color:transparent;border-radius:12px;color:#607568}
+.detail-art{height:114px;border-radius:14px;margin-bottom:24px}
+.art-word{font-size:36px;line-height:1.15;letter-spacing:-.035em}
+.event-type,.sample{font-size:10px;line-height:1.5;letter-spacing:.07em}
+.ticket-date span{font-size:11px;line-height:1.4}
+.detail-meta{gap:20px 24px;margin:24px 0}
+.detail-meta>div{background:transparent;padding:0;border-radius:0;font-size:15px;line-height:1.6}
+.detail-meta small,.detail-meta small .en{font-size:12px;line-height:1.5;margin-bottom:5px}
+.buddy-panel{padding:20px;background:#f3f6ef;border:0;border-radius:16px;margin:24px 0}
+.buddy-panel .avatar{width:46px;height:46px;flex-basis:46px}
+.promise{margin:16px 0 0;padding:0;border:0;font-size:16px;line-height:1.65;color:#35573f}
+.promise .en{font-size:15px;line-height:1.6}
+.event-about{margin:24px 0;padding:16px 0}
+.event-about summary{min-height:44px;display:list-item;align-content:center;font-size:15px;line-height:1.6}
+.event-about summary .en{font-size:13px;line-height:1.6}
+.notice{font-size:14px;line-height:1.65;padding:14px 16px;background:#f5f6f1;color:#55634f}
+.source-note,.private-note,.field-help{font-size:13px;line-height:1.6;color:#61715f}
+.field{font-size:14px;line-height:1.55;gap:7px}
+.field>.en{font-size:12px;line-height:1.5}
+.field input,.field select,.field textarea{font-size:16px;line-height:1.5;min-height:50px;padding:12px 14px;border-radius:12px;transition:border-color .15s,box-shadow .15s}
+.field textarea{min-height:104px}
+.field input::placeholder,.field textarea::placeholder{color:#778373;opacity:1}
+.field input:focus,.field select:focus,.field textarea:focus{outline:2px solid #46775c;outline-offset:2px;box-shadow:0 0 0 4px #e9f0e3}
+.form-grid{gap:22px 18px}
+.form-section{font-size:15px;line-height:1.5;padding-top:14px;margin-top:3px}
+.check-row{font-size:14px;line-height:1.65;gap:12px;align-items:flex-start}
+.check-row input{margin-top:4px;flex-shrink:0}
+.success-view{padding:4px 0 20px}
+.success-view h3{font-size:24px;line-height:1.4;letter-spacing:-.02em;margin:10px 0}
+.success-view p{font-size:15px;line-height:1.6}
+.success-view .buddy-illustration{width:164px;margin-bottom:16px}
+.steps{margin-top:24px;gap:9px}
+.steps>span{font-size:13px;line-height:1.5;padding:8px 12px}
+.steps>i{font-style:normal}
+.pwa-install{font-family:inherit;font-size:13px;line-height:1.5;padding:9px 12px;box-shadow:none}
+.pwa-install .en{font-size:11px;line-height:1.5}
+.demo-bar:has(.demo-label[hidden]){display:none}
+.topbar{position:relative}
+.topbar .pwa-install{width:44px;height:44px;min-width:44px;max-width:44px;padding:11px;gap:0;flex:0 0 44px;position:relative;background:transparent;border-color:#e2e8de;border-radius:12px;color:#44644e}
+.topbar .pwa-install>svg{width:20px;height:20px;flex-basis:20px}
+.topbar .pwa-install>span{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+.topbar .pwa-install:hover{background:#edf3e7}
+.topbar .pwa-install:active{transform:scale(.985)}
+.topbar .pwa-install:focus-visible{outline:3px solid #ad7855;outline-offset:3px}
+body[data-lang=en] .pwa-install .en{font-size:inherit}
+.pwa-caption,.pwa-info p{font-size:13px;line-height:1.65}
+.pwa-platform{font-size:12px;letter-spacing:.05em}
+.pwa-steps{line-height:1.65}
+
+/* A single gesture leads; its companion responds half a beat later. */
+.mascot-button.is-greeting .buddy-wave{animation:polish-wave 1.2s ease-in-out both}
+.mascot-button.is-greeting .buddy-eyes,.mascot-button.is-greeting .buddy-spark{animation:none}
+.mascot-button.is-greeting .buddy-peek{animation:polish-response .85s .35s ease-in-out both}
+.success-view .buddy-wave{animation:polish-wave 1.1s .15s ease-in-out both}
+.success-view .buddy-spark{animation:none}
+.toast{font-size:14px;line-height:1.6;border-radius:16px;pointer-events:none}
+.toast.is-success{display:flex;align-items:center;gap:16px;max-width:calc(100vw - 40px);width:410px;padding:20px 24px 20px 14px;background:#fffcf5;border:1px solid #e0e5d6;box-shadow:0 12px 44px #233d301c;color:#2d4938;border-radius:22px;bottom:28px;animation:polish-toast-in .32s var(--ease-out) both}
+.success-art{flex:0 0 106px;width:106px;position:relative}
+.success-art>.buddy-illustration{width:100%}
+.success-mark{position:absolute;width:28px;height:28px;right:6px;top:-5px;overflow:visible}
+.success-mark circle{fill:#285c48;transform-origin:center;transform-box:fill-box;animation:polish-seal .45s .3s var(--ease-out) both}
+.success-mark path{stroke:#fff;stroke-width:2.3;stroke-linecap:round;stroke-linejoin:round;fill:none;stroke-dasharray:22;stroke-dashoffset:0;animation:polish-check .35s .5s ease-out both}
+.success-copy{min-width:0;flex:1}
+.success-title{display:block;font-size:17px;line-height:1.4;font-weight:700;letter-spacing:-.015em;margin-bottom:6px}
+.success-title .en{font-size:14px;color:#46614c;font-weight:400}
+.success-description{font-size:13px;line-height:1.6;color:#61705c}
+.success-description .en{color:inherit;font-size:12px}
+.toast.is-success .buddy-spark{opacity:0}
+.toast.is-success .buddy-main,.toast.is-success .buddy-wave,.toast.is-success .buddy-peek{transform-box:fill-box;transform-origin:50% 100%}
+.toast[data-moment=posted] .buddy-main{animation:polish-nod .85s .1s ease-in-out both}
+.toast[data-moment=posted] .buddy-wave{animation:polish-wave 1.1s .15s ease-in-out both}
+.toast[data-moment=matched] .buddy-main,.toast[data-moment=matched] .buddy-wave{animation:polish-lean-right 1.35s .12s ease-in-out both}
+.toast[data-moment=matched] .buddy-peek{animation:polish-lean-left 1.35s .22s ease-in-out both}
+
+/* Thai has stacked marks and its own word boundaries: no Latin tracking. */
+body[data-lang=th]{font-family:var(--font-th);line-height:1.7}
+body[data-lang=th] .th{line-height:1.65;letter-spacing:0;word-break:normal;overflow-wrap:break-word}
+body[data-lang=th] .intro h1{font-size:34px;line-height:1.45;font-weight:700;letter-spacing:0}
+body[data-lang=th] .intro h1 .th{line-height:1.45}
+body[data-lang=th] :is(h2,h3,.plan-meta,.promise,.place,.meeting>div,.plan-message,.buddy-info small){letter-spacing:0;word-break:normal;overflow-wrap:break-word;line-height:1.65}
+body[data-lang=th] .summary-copy h2{font-size:21px;line-height:1.6}
+body[data-lang=th] .dialog-header h2{font-size:24px;line-height:1.6}
+body[data-lang=th] .btn{font-weight:700;line-height:1.65}
+body[data-lang=th] .chip{font-size:14px;line-height:1.65;padding:10px 16px}
+body[data-lang=th] .date-tile span{font-size:12px;letter-spacing:0;line-height:1.6}
+body[data-lang=th] .seats{font-size:12px;line-height:1.65;max-width:104px}
+body[data-lang=th] .event-time,body[data-lang=th] .free{font-size:13px;line-height:1.65}
+body[data-lang=th] .buddy-cue{font-size:14px;line-height:1.65}
+body[data-lang=th] .art-word{font-size:32px;line-height:1.45;letter-spacing:0;bottom:9px}
+body[data-lang=th] .field{font-size:15px;line-height:1.65}
+body[data-lang=th] .field input,body[data-lang=th] .field select,body[data-lang=th] .field textarea{font-size:16px;line-height:1.65;min-height:52px;padding:12px 14px}
+body[data-lang=th] .field textarea{min-height:104px}
+body[data-lang=th] :is(.notice,.private-note,.check-row,.field-help,.pwa-steps,.pwa-hero p){line-height:1.75}
+body[data-lang=th] .success-title{font-size:18px;line-height:1.65;letter-spacing:0}
+body[data-lang=th] .success-description{font-size:14px;line-height:1.75}
+body[data-lang=th] .pwa-platform{letter-spacing:0}
+body[data-lang=th] .mascot-hint .th{font-size:12px}
+
+@media(hover:hover){.event-card:hover{transform:none;border-color:#d5dfce;box-shadow:0 3px 14px #26453603}.card-action .btn:hover .action-arrow{transform:translateX(2px)}.mascot-button:hover .buddy-peek{transform:none}.btn:hover:not(:disabled){filter:none;background:#244f3e;box-shadow:none}.btn.light:hover{background:#f4f7ef}.btn.lime:hover{background:#dce9cf}.btn.subtle:hover{background:#f1f4ec}.btn.danger:hover{background:#fcece5}.close:hover{background:#f0f4ec}}
+@media(max-width:1000px){.event-card{padding:22px}.intro{grid-template-columns:minmax(0,1fr) 220px}body[data-lang=en] .intro h1 .en{font-size:37px}.hero-note,.hero-note .en{font-size:13px}.toolbar{gap:14px}.chip{padding-inline:13px}}
+@media(max-width:700px){
+ .wrap{padding:0 20px}.topbar{min-height:68px}.lang{font-size:13px;min-height:44px}.intro{padding:24px 20px 26px;grid-template-columns:minmax(0,1fr) 105px;min-height:190px;margin-top:18px;margin-bottom:24px}.intro .eyebrow{font-size:9px;letter-spacing:.06em;gap:5px}.eyebrow .local-name{font-size:11px}.intro h1{font-size:27px;line-height:1.25}.intro h1 .en{font-size:20px;line-height:1.3}body[data-lang=en] .intro h1 .en{font-size:30px;line-height:1.17;letter-spacing:-.035em}.mascot-button{height:130px;margin:14px -6px 0 0}.hero-buddies{inset:-3px -24px 9px -27px}.hero-buddies .buddy-illustration{width:156px}.mascot-hint,.mascot-hint .zh,.mascot-hint .en{font-size:11px}.hello-bubble{font-size:12px;left:0;top:-9px;padding:5px 10px}.toolbar{gap:14px;margin-bottom:20px}.searchbox{min-height:52px}.chip{padding:10px 14px;font-size:13px;min-height:46px}.chip .en{font-size:11px}.section-label{font-size:12px}.section-hint{font-size:11px}.event-card{padding:21px;border-radius:22px}.card-summary{gap:15px}.summary-copy h2{font-size:21px}.date-tile{width:54px;flex-basis:54px}.card-body{margin-top:20px}.card-action{margin-top:20px}.card-action .btn{font-size:14px;min-height:49px;padding:11px 13px}.seats{padding:5px 7px}.buddy-info small{font-size:12px}.demo-bar{align-items:flex-start;gap:10px;font-size:11px;padding-top:16px}.demo-label{align-items:center;gap:6px;align-self:center}.demo-label .inline-bi .en{font-size:11px}.pwa-install{font-size:12px;padding:8px 10px;gap:6px;min-height:44px;max-width:48%}.pwa-install .en{font-size:11px}.pwa-install>svg{width:16px;flex-basis:16px}.plan-card{padding:22px}.plan-top .eyebrow{font-size:11px}.plan-card h2{font-size:22px}.plan-actions .btn{min-height:46px}.status{font-size:11px}.dialog-header{padding:18px 20px 16px}.dialog-header h2{font-size:22px}.dialog-body{padding:22px 20px 26px}.dialog-footer{padding:14px 20px max(18px,env(safe-area-inset-bottom))}.dialog-actions>.btn{font-size:15px;min-height:52px}.detail-meta{gap:20px 18px}.buddy-panel{padding:18px}.promise{font-size:16px}.toast.is-success{bottom:calc(var(--nav-height) + 12px + env(safe-area-inset-bottom));max-width:calc(100vw - 32px);width:390px;padding:17px 18px 17px 10px;gap:12px}.success-art{width:90px;flex-basis:90px}.success-mark{width:25px;height:25px;right:4px}.success-title{font-size:16px}.success-description{font-size:12px}.success-description .en{font-size:12px}.success-title .en{font-size:13px}.mobile-nav button{min-height:56px}.mobile-nav .en{font-size:11px}.success-view h3{font-size:23px}
+ body[data-lang=th] .intro h1{font-size:27px;line-height:1.5}body[data-lang=th] .intro{min-height:196px}body[data-lang=th] .chip{font-size:14px;padding:10px 14px}body[data-lang=th] .dialog-header h2{font-size:22px}body[data-lang=th] .summary-copy h2{font-size:21px}body[data-lang=th] .card-action .btn{font-size:14px}body[data-lang=th] .mascot-hint .th{font-size:11px}body[data-lang=th] .mobile-nav .th{font-size:12px}body[data-lang=th] .success-description{font-size:13px}
+}
+@media(max-width:360px){.wrap{padding:0 16px}.intro{padding-inline:17px;grid-template-columns:minmax(0,1fr) 91px}.intro .eyebrow{font-size:8px;gap:4px}body[data-lang=en] .intro h1 .en{font-size:28px}.hero-buddies .buddy-illustration{width:143px}.event-card{padding:18px}.card-summary{gap:12px}.date-tile{width:50px;flex-basis:50px}.seats{padding:5px 6px}.card-action{gap:9px}.card-action .btn{padding-inline:11px;gap:7px}.buddy-cue{font-size:12px}.buddy-cue .en{font-size:11px}.success-art{width:78px;flex-basis:78px}body[data-lang=th] .intro h1{font-size:25px}body[data-lang=th] .buddy-cue{font-size:13px}}
+@media(max-width:700px){.topbar{gap:10px}.topbar .lang{max-width:118px;padding-inline:8px}.intro{margin-top:18px}}
+@keyframes polish-wave{0%,100%{transform:rotate(0)}25%{transform:rotate(-11deg)}52%{transform:rotate(6deg)}76%{transform:rotate(-4deg)}}
+@keyframes polish-response{0%,100%{transform:rotate(0)}50%{transform:rotate(-3deg)}}
+@keyframes polish-nod{0%,100%{transform:translateY(0) scaleY(1)}45%{transform:translateY(3px) scaleY(.97)}70%{transform:translateY(-2px) scaleY(1.01)}}
+@keyframes polish-lean-right{0%,100%{transform:rotate(0) translateX(0)}40%,60%{transform:rotate(5deg) translateX(4px)}80%{transform:rotate(-1deg) translateX(0)}}
+@keyframes polish-lean-left{0%,100%{transform:rotate(0) translateX(0)}40%,60%{transform:rotate(-7deg) translateX(-3px)}80%{transform:rotate(1deg) translateX(0)}}
+@keyframes polish-seal{from{opacity:0;transform:scale(.65)}to{opacity:1;transform:scale(1)}}
+@keyframes polish-check{from{stroke-dashoffset:22}to{stroke-dashoffset:0}}
+@keyframes polish-toast-in{from{opacity:0;transform:translate(-50%,10px)}to{opacity:1;transform:translate(-50%,0)}}
+@keyframes polish-dialog-in{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+@keyframes polish-dialog-out{to{opacity:0;transform:translateY(6px)}}
+@keyframes polish-backdrop-in{from{opacity:0}to{opacity:1}}
+@keyframes polish-backdrop-out{to{opacity:0}}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important;scroll-behavior:auto!important}.btn:active,.chip:active,.mobile-nav button:active,.event-card:hover,.card-action .btn:hover .action-arrow{transform:none!important}.success-mark path{stroke-dashoffset:0}}

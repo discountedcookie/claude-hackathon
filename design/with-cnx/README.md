@@ -2,7 +2,26 @@
 
 A runnable design reference for the Chiang Mai event buddy experience.
 
-[Live prototype](https://with-cnx-tian-2026.starshipenterprise12.chatgpt.site)
+[Previously published prototype](https://with-cnx-tian-2026.starshipenterprise12.chatgpt.site). That hosted version predates this UI polish; run this branch locally to review the latest design. This change does not deploy the site.
+
+## UI polish revision
+
+This revision updates the standalone design reference only. It is based on the latest team code at `b8baaca` and does not modify the Next.js application or backend.
+
+- Clearer type hierarchy and locally bundled LINE Seed English/Thai fonts, with language-specific spacing and wrapping.
+- Less visual nesting in event details, more prominent buddy information, and clearer internal navigation arrows.
+- Quiet button feedback and dialog entrance/exit; no repeated card animation while searching.
+- A gentle posting confirmation and a one-time companion interaction after **Preview match**. Reduced-motion preferences receive static feedback.
+- Cleaner Chinese, English and Thai copy. Repeated Demo badges are removed; relevant actions still explain device-only storage and unsent messages.
+- Installation lives in the header. Identical user-entered text appears once in bilingual mode.
+
+### Review the success moments
+
+1. **Invite a buddy → Post invitation** after completing the form.
+2. **View invite → I’d like to join → Request to join → View my plans → Preview match**.
+3. Switch between **English**, **ไทย**, and **中文 / EN** to inspect type and layout.
+
+These actions only change records in your current browser. The original sample events remain examples, and previewing a match does not notify another person.
 
 ## Run
 
@@ -29,7 +48,10 @@ The two mascots are original design illustrations, not traditional cultural char
 | File | Purpose |
 | --- | --- |
 | `dist/index.html` | Product layout, design tokens, SVG mascots, translations and demo interactions |
+| `dist/ui-polish.css` | Final typography, component spacing, responsive overrides and motion styles |
+| `dist/ui-polish.js` | Localized placeholders, dialog transitions and presentation-only success feedback |
 | `dist/pwa.js` / `dist/pwa.css` | Install and update UI |
+| `dist/fonts/` | Unmodified LINE Seed EN/TH web fonts, attribution and SIL OFL 1.1 license |
 | `dist/manifest.webmanifest` / `dist/icons/` | PWA identity and home-screen icons |
 | `dist/sw.js` | Generated service worker |
 | `update-worker.py` | Regenerate the offline cache version after changes |
@@ -47,6 +69,8 @@ Serve the entire `dist` directory. Use HTTPS for installation on teammates' devi
 This folder is a separate design prototype. The Next.js application remains in `app/`.
 
 - Extract the tokens, components and SVGs from `dist/index.html` into the app as needed.
+- Read `dist/ui-polish.css` as the final style layer; it overrides the base styles in `index.html`. Carry the font files and their license/attribution along with the typography.
+- Adapt the presentation helpers in `dist/ui-polish.js` to the app's real success states. They rely on this prototype's helpers and are not drop-in React code. In particular, **Preview match** is a simulated action, not the app's real acceptance handler.
 - Connect event cards and forms to the existing Supabase flows. Replace the sample event list, `persist()` local storage, and simulated request/acceptance handlers.
 - Keep registration on the original event platform distinct from arranging a buddy.
 - `pwa.js` depends on the prototype's `bi()` and `openModal()` helpers and its DOM structure. Adapt those dependencies when moving it into React.
@@ -59,8 +83,19 @@ Invitations and plans are stored only in the current browser under `cnx-with-pro
 ## Verification
 
 - JavaScript syntax and bundled resource paths checked.
-- Mobile layout and Thai interface checked in the browser.
-- Offline reopening checked after stopping the local server.
-- Automatic greeting delay, dismissal and manual wave checked.
+- English, Thai and bilingual layouts inspected at 360px / 390px mobile and 1309px desktop widths; no page-wide horizontal overflow observed.
+- Posting, saved request, match preview, cancellation, dialog close/focus return and PWA update flow exercised in the local design preview.
+- New font/style/script assets included in the generated offline cache. Offline reopening had previously been verified on the base prototype.
+- Reduced-motion handling checked in source; no OS preference was changed during the latest pass. The existing automatic greeting behavior is retained.
+
+The shipped assets were checked for accidental local paths, credentials and test records. Browser-created invitations and plans are not bundled into the source.
 
 Physical iPhone/Android home-screen installation has not been tested on a device.
+
+## References
+
+- [LINE Seed fonts and licensing](https://seed.line.me/index_en.html)
+- [LINE design principles](https://designsystem.line.me/about/design-principle-en)
+- [W3C Thai script resources](https://www.w3.org/TR/thai-lreq/)
+
+Motion timing and spacing are choices for With CNX, not claimed as official LINE specifications. The existing mascot illustrations remain original With artwork.
