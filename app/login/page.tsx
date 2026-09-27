@@ -15,7 +15,6 @@ const AUTH_ERRORS: Record<string, string> = {
 };
 
 function LoginForm() {
-  const supabase = createClient();
   const router = useRouter();
   const t = useT();
   const { lang, setLang } = useLang();
@@ -38,6 +37,7 @@ function LoginForm() {
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
+    const supabase = createClient();
     setBusy(true);
     setError(null);
     if (mode === "signin") {

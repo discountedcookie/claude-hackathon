@@ -164,7 +164,6 @@ export function LangProvider({
   children: ReactNode;
 }) {
   const [lang, setLangState] = useState<Lang>(initial);
-  const supabase = createClient();
 
   // Correct CJK glyphs, Thai line breaking and screen-reader voice depend on <html lang>.
   useEffect(() => {
@@ -173,7 +172,8 @@ export function LangProvider({
 
   function setLang(l: Lang) {
     setLangState(l);
-    if (userId) supabase.from("profiles").update({ language: l }).eq("id", userId).then();
+    // Client created lazily so pages using this provider can be prerendered without Supabase env vars.
+    if (userId) createClient().from("profiles").update({ language: l }).eq("id", userId).then();
   }
 
   return <LangContext.Provider value={{ lang, setLang }}>{children}</LangContext.Provider>;
