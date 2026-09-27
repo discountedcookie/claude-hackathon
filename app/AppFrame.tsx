@@ -67,7 +67,7 @@ function FrameInner({ me, children }: { me: Profile; children: ReactNode }) {
                 <Avatar name={me.display_name} small />
               </DropdownMenu.Trigger>
               <DropdownMenu.Portal>
-                <DropdownMenu.Content align="end" sideOffset={8} className="z-30 min-w-44 rounded-2xl border border-cnx-line bg-white p-1.5 shadow-lg">
+                <DropdownMenu.Content align="end" sideOffset={8} className="cnx-pop z-30 min-w-44 rounded-2xl border border-cnx-line bg-white p-1.5 shadow-lg">
                   <DropdownMenu.Label className="truncate px-3 py-2 text-sm font-semibold">{me.display_name}</DropdownMenu.Label>
                   <DropdownMenu.Separator className="my-1 h-px bg-cnx-line" />
                   <DropdownMenu.Item

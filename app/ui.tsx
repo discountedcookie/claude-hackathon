@@ -36,10 +36,12 @@ export function Section({ value, title, children }: { value: string; title: Reac
       <Accordion.Header>
         <Accordion.Trigger className="group flex w-full items-center justify-between py-3 text-left text-sm font-semibold">
           {title}
-          <Icon name="chevron" className="h-4 w-4 text-cnx-muted transition group-data-[state=open]:rotate-180" />
+          <Icon name="chevron" className="h-4 w-4 text-cnx-muted transition-transform duration-200 group-data-[state=open]:rotate-180" />
         </Accordion.Trigger>
       </Accordion.Header>
-      <Accordion.Content className="pb-4 text-sm">{children}</Accordion.Content>
+      <Accordion.Content className="cnx-collapse overflow-hidden text-sm">
+        <div className="pb-4">{children}</div>
+      </Accordion.Content>
     </Accordion.Item>
   );
 }

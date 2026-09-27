@@ -89,6 +89,16 @@ body {
 @keyframes cnx-dialog-in { from { opacity: 0; translate: 0 12px; } to { opacity: 1; translate: 0 0; } }
 @keyframes cnx-dialog-out { from { opacity: 1; } to { opacity: 0; } }
 
+/* Menus pop in and out; accordion content animates its height (Radix sets the variable). */
+.cnx-pop[data-state="open"] { animation: cnx-pop-in .16s cubic-bezier(.22, 1, .36, 1); transform-origin: var(--radix-dropdown-menu-content-transform-origin); }
+.cnx-pop[data-state="closed"] { animation: cnx-pop-out .12s ease-in; transform-origin: var(--radix-dropdown-menu-content-transform-origin); }
+@keyframes cnx-pop-in { from { opacity: 0; scale: .96; translate: 0 -4px; } to { opacity: 1; scale: 1; translate: 0 0; } }
+@keyframes cnx-pop-out { from { opacity: 1; scale: 1; } to { opacity: 0; scale: .97; } }
+.cnx-collapse[data-state="open"] { animation: cnx-open .22s cubic-bezier(.22, 1, .36, 1); }
+.cnx-collapse[data-state="closed"] { animation: cnx-close .18s ease-in; }
+@keyframes cnx-open { from { height: 0; opacity: 0; } to { height: var(--radix-accordion-content-height); opacity: 1; } }
+@keyframes cnx-close { from { height: var(--radix-accordion-content-height); opacity: 1; } to { height: 0; opacity: 0; } }
+
 /* Chat: messages slide in, typing dots. */
 .cnx-msg-in { animation: cnx-msg-in .22s cubic-bezier(.22, 1, .36, 1) both; }
 @keyframes cnx-msg-in { from { opacity: 0; translate: 0 6px; } to { opacity: 1; translate: 0 0; } }

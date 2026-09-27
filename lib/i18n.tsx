@@ -1,6 +1,7 @@
 "use client";
 
 import { createContext, useContext, useEffect, useState, ReactNode } from "react";
+import { DropdownMenu } from "radix-ui";
 import { createClient } from "@/lib/supabase/client";
 
 export type Lang = "en" | "th" | "zh";
@@ -267,25 +268,46 @@ export function useDateParts() {
   };
 }
 
+const LANG_LABEL: Record<Lang, string> = { en: "EN", th: "ไทย", zh: "中文" };
+const LANG_FULL: Record<Lang, string> = { en: "English", th: "ไทย", zh: "中文" };
+
+// Styled, animated language menu (Radix) instead of the native select, which feels stiff on click.
 export function LangSwitcher() {
   const { lang, setLang, userId } = useLang();
+  function pick(l: Lang) {
+    setLang(l);
+    if (!userId)
+      try {
+        localStorage.setItem(PICKED_LANG_KEY, l);
+      } catch {}
+  }
   return (
-    <select
-      value={lang}
-      onChange={(e) => {
-        const l = e.target.value as Lang;
-        setLang(l);
-        if (!userId)
-          try {
-            localStorage.setItem(PICKED_LANG_KEY, l);
-          } catch {}
-      }}
-      className="rounded-lg border border-cnx-line bg-transparent px-1.5 py-1 text-sm text-cnx-ink"
-      aria-label="Language"
-    >
-      <option value="en">EN</option>
-      <option value="th">ไทย</option>
-      <option value="zh">中文</option>
-    </select>
+    <DropdownMenu.Root>
+      <DropdownMenu.Trigger
+        aria-label="Language"
+        className="inline-flex items-center gap-1 rounded-lg border border-cnx-line bg-white px-2.5 py-1.5 text-sm text-cnx-ink transition hover:bg-cnx-pale data-[state=open]:bg-cnx-pale"
+      >
+        {LANG_LABEL[lang]}
+        <svg viewBox="0 0 24 24" className="h-3.5 w-3.5 text-cnx-muted transition-transform duration-200 [[data-state=open]>&]:rotate-180" aria-hidden>
+          <path d="M6 9l6 6 6-6" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+        </svg>
+      </DropdownMenu.Trigger>
+      <DropdownMenu.Portal>
+        <DropdownMenu.Content align="end" sideOffset={6} className="cnx-pop z-40 min-w-36 rounded-2xl border border-cnx-line bg-white p-1.5 shadow-lg">
+          <DropdownMenu.RadioGroup value={lang} onValueChange={(v) => pick(v as Lang)}>
+            {(["en", "th", "zh"] as const).map((l) => (
+              <DropdownMenu.RadioItem
+                key={l}
+                value={l}
+                className="flex cursor-pointer items-center justify-between gap-3 rounded-xl px-3 py-2 text-sm outline-none transition-colors data-[highlighted]:bg-cnx-pale"
+              >
+                {LANG_FULL[l]}
+                <DropdownMenu.ItemIndicator className="text-cnx-green">✓</DropdownMenu.ItemIndicator>
+              </DropdownMenu.RadioItem>
+            ))}
+          </DropdownMenu.RadioGroup>
+        </DropdownMenu.Content>
+      </DropdownMenu.Portal>
+    </DropdownMenu.Root>
   );
 }
