@@ -18,7 +18,8 @@ type PhotonFeature = {
 // City (or place) name for coordinates, via Photon's reverse geocoder; "" if unknown.
 export async function placeName(lat: number, lng: number, lang: Lang): Promise<string> {
   try {
-    const res = await fetch(`https://photon.komoot.io/reverse?lat=${lat}&lon=${lng}${lang === "en" ? "&lang=en" : ""}`);
+    // Photon has no Chinese; Chinese readers get the English name rather than Thai script.
+    const res = await fetch(`https://photon.komoot.io/reverse?lat=${lat}&lon=${lng}${lang === "th" ? "" : "&lang=en"}`);
     const p = ((await res.json()) as { features: PhotonFeature[] }).features[0]?.properties;
     return p?.city ?? p?.name ?? p?.state ?? "";
   } catch {
@@ -27,7 +28,15 @@ export async function placeName(lat: number, lng: number, lang: Lang): Promise<s
 }
 
 // Fallback when browser location is denied: search a place (Photon geocoder) or tap the map.
-export default function LocationPicker({ onPick, onLocate }: { onPick: (p: Place) => void; onLocate: () => void }) {
+export default function LocationPicker({
+  onPick,
+  onLocate,
+  onCancel,
+}: {
+  onPick: (p: Place) => void;
+  onLocate: () => void;
+  onCancel?: () => void;
+}) {
   const t = useT();
   const { lang } = useLang();
   const [query, setQuery] = useState("");
@@ -52,10 +61,17 @@ export default function LocationPicker({ onPick, onLocate }: { onPick: (p: Place
     <section className="cnx-card space-y-3">
       <div className="flex items-center justify-between gap-3">
         <h2 className="font-semibold">{t("locWhere")}</h2>
-        <button onClick={onLocate} className="cnx-btn-light text-sm">
-          <Icon name="locate" className="h-4 w-4" />
-          {t("locMine")}
-        </button>
+        <div className="flex items-center gap-2">
+          <button onClick={onLocate} className="cnx-btn-light text-sm">
+            <Icon name="locate" className="h-4 w-4" />
+            {t("locMine")}
+          </button>
+          {onCancel && (
+            <button onClick={onCancel} className="text-sm text-cnx-muted underline">
+              {t("cancel")}
+            </button>
+          )}
+        </div>
       </div>
       <form onSubmit={search} className="flex gap-2">
         <input className="cnx-input" placeholder={t("locSearchPh")} value={query} onChange={(e) => setQuery(e.target.value)} />

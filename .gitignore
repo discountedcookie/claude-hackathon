@@ -43,3 +43,6 @@ next-env.d.ts
 # supabase local artifacts
 supabase/.temp/
 supabase/.branches/
+
+# copied from node_modules by postinstall (maplibre web worker)
+/public/maplibre/

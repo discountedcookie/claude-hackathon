@@ -292,12 +292,15 @@ export default function ProjectsBoard({ me }: { me: Profile }) {
   const others = open.filter((p) => p.owner_id !== me.id);
 
   return (
-    <main className="mx-auto max-w-5xl space-y-8 p-4 sm:p-6">
+    <main className="mx-auto w-full max-w-5xl space-y-8 p-4 sm:p-6">
       <div className="flex items-center justify-between gap-3">
-        <Faq prefix="faqPr" count={4} />
-        <button onClick={() => setShowForm((s) => !s)} className="cnx-btn shrink-0 whitespace-nowrap text-sm">
-          + {t("newProject")}
+        <button
+          onClick={() => setShowForm((s) => !s)}
+          className={`shrink-0 whitespace-nowrap text-sm ${showForm ? "cnx-btn-light text-cnx-muted" : "cnx-btn"}`}
+        >
+          {showForm ? t("cancel") : `+ ${t("newProject")}`}
         </button>
+        <Faq prefix="faqPr" count={4} />
       </div>
 
       {showForm && (
@@ -331,6 +334,8 @@ export default function ProjectsBoard({ me }: { me: Profile }) {
           <div className="grid gap-4 md:grid-cols-2 [&>*]:min-w-0">{mine.map(projectCard)}</div>
         </section>
       )}
+
+      {projects.length === 0 && <p className="text-sm text-cnx-muted">{t("noProjects")}</p>}
 
       {others.length > 0 && (
         <section className="space-y-3">

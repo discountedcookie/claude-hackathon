@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { useLang, useT } from "@/lib/i18n";
 import Icon from "./Icon";
@@ -74,21 +74,36 @@ export default function EventsFeed({ meId }: { meId: string }) {
     // eslint-disable-next-line react-hooks/set-state-in-effect -- one-time location bootstrap on mount
     if (!saved) return locate();
     setPlace(saved);
-    if (!saved.label) placeName(saved.lat, saved.lng, lang).then((label) => label && choose({ ...saved, label }));
     // eslint-disable-next-line react-hooks/exhaustive-deps -- once on mount
   }, []);
 
+  // The place name follows the UI language.
+  const placeKey = place ? `${place.lat},${place.lng}` : "";
+  useEffect(() => {
+    if (!place) return;
+    let stale = false;
+    placeName(place.lat, place.lng, lang).then((label) => {
+      if (!stale && label && label !== place.label) choose({ ...place, label });
+    });
+    return () => {
+      stale = true;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- re-run on language or coordinates, not on label
+  }, [lang, placeKey]);
+
   // Everything the feed needs comes from one RPC (one round trip, RLS applies).
   // Without a place there are no nearby events, but plans and requests still load.
+  // Only the newest request may update the feed, so a slow earlier answer can't overwrite it.
+  const latest = useRef(0);
   const load = useCallback(async () => {
+    const id = ++latest.current;
     const { data } = await supabase.rpc("get_feed", { p_lat: place?.lat ?? null, p_lng: place?.lng ?? null });
-    if (data) setFeed(data as Feed);
+    if (data && id === latest.current) setFeed(data as Feed);
   }, [supabase, place]);
 
   // Show what's already in the DB right away; import from Luma alongside and refresh only if it added events.
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect -- setLoading runs after the awaited fetch
-    load().finally(() => setLoading(false));
+    load().finally(() => place && setLoading(false));
     if (!place) return;
     fetch("/api/events/nearby", {
       method: "POST",
@@ -164,7 +179,7 @@ export default function EventsFeed({ meId }: { meId: string }) {
   const otherId = (r: BuddyRequest) => (r.from_id === meId ? r.to_id : r.from_id);
 
   return (
-    <main className="mx-auto max-w-5xl space-y-8 p-4 sm:p-6">
+    <main className="mx-auto w-full max-w-5xl space-y-8 p-4 sm:p-6">
       <div className="flex items-center justify-between gap-3">
         <p className="text-sm font-semibold text-cnx-green">{count > 0 && t("counter", { n: count })}</p>
         <Faq prefix="faqEv" count={6} />
@@ -195,7 +210,7 @@ export default function EventsFeed({ meId }: { meId: string }) {
       )}
 
       {picking || !place ? (
-        picking && <LocationPicker onPick={choose} onLocate={locate} />
+        picking && <LocationPicker onPick={choose} onLocate={locate} onCancel={place ? () => setPicking(false) : undefined} />
       ) : (
         <section className="space-y-3">
           <div className="flex items-center justify-between gap-3">
@@ -207,7 +222,7 @@ export default function EventsFeed({ meId }: { meId: string }) {
               <button onClick={locate} title={t("locMine")} aria-label={t("locMine")} className="rounded-lg p-2 text-cnx-muted hover:text-cnx-ink">
                 <Icon name="locate" className="h-5 w-5" />
               </button>
-              <button onClick={() => setPicking(true)} className="rounded-lg px-2 py-1.5 text-cnx-muted underline hover:text-cnx-ink">
+              <button onClick={() => setPicking(true)} className="py-1.5 pl-2 text-cnx-muted underline hover:text-cnx-ink">
                 {t("locChange")}
               </button>
             </div>

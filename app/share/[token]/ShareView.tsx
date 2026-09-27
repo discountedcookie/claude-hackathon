@@ -37,7 +37,7 @@ function Live({ token, session }: { token: string; session: Session | null }) {
   const venue = session?.lat != null && session?.lng != null ? { lat: session.lat, lng: session.lng } : null;
 
   return (
-    <main className="mx-auto max-w-lg space-y-4 p-4 sm:p-6">
+    <main className="mx-auto w-full max-w-lg space-y-4 p-4 sm:p-6">
       <header className="flex items-center justify-between">
         <h1 className="text-lg font-extrabold">With · CNX</h1>
         <LangSwitcher />

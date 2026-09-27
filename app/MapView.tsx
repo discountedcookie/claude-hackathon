@@ -1,7 +1,11 @@
 "use client";
 
 import Map, { Marker, type MapLayerMouseEvent } from "react-map-gl/maplibre";
+import { setWorkerUrl } from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
+
+// The bundler moves maplibre's code, so it can't find its worker next to itself; serve it from /public (see postinstall).
+setWorkerUrl("/maplibre/maplibre-gl-worker.mjs");
 
 export type Point = { lat: number; lng: number };
 
@@ -26,6 +30,9 @@ export default function MapView({
       <Map
         initialViewState={{ latitude: center.lat, longitude: center.lng, zoom }}
         mapStyle={STYLE}
+        attributionControl={{ compact: true }}
+        // Compact attribution starts expanded; fold it to the (i) button so it doesn't cover the small map.
+        onLoad={(e) => e.target.getContainer().querySelector(".maplibregl-ctrl-attrib")?.classList.remove("maplibregl-compact-show")}
         onClick={onPick ? (e: MapLayerMouseEvent) => onPick({ lat: e.lngLat.lat, lng: e.lngLat.lng }) : undefined}
         style={{ width: "100%", height: "100%" }}
       >

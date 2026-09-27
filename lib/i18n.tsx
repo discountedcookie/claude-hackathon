@@ -147,12 +147,17 @@ export const strings: Dict = {
   nothingYet: { en: "No free events near here yet.", th: "ยังไม่มีงานฟรีแถวนี้", zh: "附近暂时没有免费活动" },
   summaryPending: { en: "Translating…", th: "กำลังแปล…", zh: "翻译中…" },
   original: { en: "Original", th: "ต้นฉบับ", zh: "原文" },
+  noProjects: { en: "No projects yet.", th: "ยังไม่มีโปรเจกต์", zh: "暂时还没有项目" },
 };
 
-const LangContext = createContext<{ lang: Lang; setLang: (l: Lang) => void }>({
+const LangContext = createContext<{ lang: Lang; setLang: (l: Lang) => void; userId: string | null }>({
   lang: "en",
   setLang: () => {},
+  userId: null,
 });
+
+// A language picked before signing in (login page) is remembered here and applied to the profile at sign-in.
+export const PICKED_LANG_KEY = "cnx-lang";
 
 export function LangProvider({
   initial,
@@ -176,7 +181,7 @@ export function LangProvider({
     if (userId) createClient().from("profiles").update({ language: l }).eq("id", userId).then();
   }
 
-  return <LangContext.Provider value={{ lang, setLang }}>{children}</LangContext.Provider>;
+  return <LangContext.Provider value={{ lang, setLang, userId }}>{children}</LangContext.Provider>;
 }
 
 export function useLang() {
@@ -201,8 +206,11 @@ export function useDateParts() {
   return (iso: string, timeZone?: string | null) => {
     const f = (o: Intl.DateTimeFormatOptions) =>
       new Intl.DateTimeFormat(DATE_LOCALE[lang], { ...o, timeZone: timeZone ?? undefined }).format(new Date(iso));
+    const day = new Intl.DateTimeFormat(DATE_LOCALE[lang], { day: "numeric", timeZone: timeZone ?? undefined })
+      .formatToParts(new Date(iso))
+      .find((p) => p.type === "day")?.value;
     return {
-      day: f({ day: "numeric" }),
+      day: day ?? "",
       month: f({ month: "short" }),
       weekday: f({ weekday: "short" }),
       time: f({ hour: "numeric", minute: "2-digit" }),
@@ -211,11 +219,18 @@ export function useDateParts() {
 }
 
 export function LangSwitcher() {
-  const { lang, setLang } = useLang();
+  const { lang, setLang, userId } = useLang();
   return (
     <select
       value={lang}
-      onChange={(e) => setLang(e.target.value as Lang)}
+      onChange={(e) => {
+        const l = e.target.value as Lang;
+        setLang(l);
+        if (!userId)
+          try {
+            localStorage.setItem(PICKED_LANG_KEY, l);
+          } catch {}
+      }}
       className="rounded-lg border border-cnx-line bg-transparent px-1.5 py-1 text-sm text-cnx-ink"
       aria-label="Language"
     >

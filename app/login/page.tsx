@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
-import { LangProvider, LangSwitcher, useLang, useT } from "@/lib/i18n";
+import { Lang, LangProvider, LangSwitcher, PICKED_LANG_KEY, useLang, useT } from "@/lib/i18n";
 import BuddyMascot from "../BuddyMascot";
 
 // Supabase auth errors come in English; map the common ones.
@@ -19,10 +19,15 @@ function LoginForm() {
   const t = useT();
   const { lang, setLang } = useLang();
 
-  // First visit: start in the browser's language if it's Thai or Chinese.
+  // Start in the language picked here before, else the browser's language if it's Thai or Chinese.
   useEffect(() => {
+    let picked: string | null = null;
+    try {
+      picked = localStorage.getItem(PICKED_LANG_KEY);
+    } catch {}
     const browser = navigator.language.toLowerCase();
-    if (browser.startsWith("th")) setLang("th");
+    if (picked === "en" || picked === "th" || picked === "zh") setLang(picked as Lang);
+    else if (browser.startsWith("th")) setLang("th");
     else if (browser.startsWith("zh")) setLang("zh");
     // eslint-disable-next-line react-hooks/exhaustive-deps -- once on mount
   }, []);
@@ -41,12 +46,18 @@ function LoginForm() {
     setBusy(true);
     setError(null);
     if (mode === "signin") {
-      const { error } = await supabase.auth.signInWithPassword({ email, password });
+      const { data, error } = await supabase.auth.signInWithPassword({ email, password });
       if (error) {
         setError(t(AUTH_ERRORS[error.code ?? ""] ?? "somethingWrong"));
         setBusy(false);
         return;
       }
+      // An explicit choice on this page wins over the language saved in the profile.
+      let picked: string | null = null;
+      try {
+        picked = localStorage.getItem(PICKED_LANG_KEY);
+      } catch {}
+      if (picked === lang) await supabase.from("profiles").update({ language: lang }).eq("id", data.user.id);
     } else {
       // The profile + contact rows are created by a DB trigger from this metadata.
       const { data, error } = await supabase.auth.signUp({
@@ -74,13 +85,13 @@ function LoginForm() {
   }
 
   return (
-    <main className="mx-auto flex min-h-screen max-w-sm flex-col justify-center gap-4 p-6">
+    <main className="mx-auto w-full flex min-h-screen max-w-sm flex-col gap-4 p-6 pt-[8vh]">
       <div className="flex justify-end">
         <LangSwitcher />
       </div>
       <BuddyMascot className="mx-auto h-28 w-40" />
-      <h1 className="text-2xl font-extrabold tracking-tight">With · CNX</h1>
-      <p className="text-sm text-cnx-muted">
+      <h1 className="flex h-9 items-center text-2xl font-extrabold tracking-tight">With · CNX</h1>
+      <p className="flex h-7 items-center text-sm text-cnx-muted">
         {mode === "signin" ? t("signIn") : t("signUp")} —{" "}
         <button className="underline" onClick={() => setMode(mode === "signin" ? "signup" : "signin")}>
           {mode === "signin" ? t("needAccount") : t("haveAccount")}
