@@ -179,6 +179,11 @@ export const strings: Dict = {
   waitingFor: { en: "Waiting for {name} to accept. Then you'll both get each other's LINE and tips for meeting.", th: "รอ {name} ตอบรับ แล้วทั้งคู่จะได้ LINE ของกันและกัน พร้อมเคล็ดลับการเจอกัน", zh: "等待 {name} 接受。之后你们会看到彼此的 LINE 和见面小贴士。" },
   drafting: { en: "Writing a hello in their language…", th: "กำลังเขียนคำทักทายเป็นภาษาของเขา…", zh: "正在用对方的语言写问候……" },
   askNudge: { en: "Ask someone to go with you", th: "ชวนใครสักคนไปด้วยกัน", zh: "邀请一个人一起去" },
+  thinking: { en: "Reading…", th: "กำลังอ่าน…", zh: "正在读取……" },
+  writingMessage: { en: "Writing a message…", th: "กำลังเขียนข้อความ…", zh: "正在写消息……" },
+  suggesting: { en: "Finding people…", th: "กำลังหาคน…", zh: "正在查找……" },
+  writingListing: { en: "Writing the listing…", th: "กำลังเขียนประกาศ…", zh: "正在撰写介绍……" },
+  preparingPlan: { en: "Setting up…", th: "กำลังเตรียม…", zh: "正在准备……" },
 };
 
 const LangContext = createContext<{ lang: Lang; setLang: (l: Lang) => void; userId: string | null }>({

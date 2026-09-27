@@ -1,5 +1,6 @@
 "use client";
 
+import Spinner, { AiWorking } from "./Spinner";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { useLang, useT } from "@/lib/i18n";
@@ -237,7 +238,7 @@ export default function EventsFeed({ meId }: { meId: string }) {
             </div>
           </div>
           {loading ? (
-            <p className="animate-pulse text-sm text-cnx-muted">{t("findingEvents")}</p>
+            <AiWorking label={t("findingEvents")} />
           ) : (
             events.length === 0 && <p className="text-sm text-cnx-muted">{t("nothingYet")}</p>
           )}
@@ -267,7 +268,7 @@ export default function EventsFeed({ meId }: { meId: string }) {
         <div className="flex gap-2">
           <input id="luma-url" className="cnx-input" placeholder="https://lu.ma/…" value={url} onChange={(e) => setUrl(e.target.value)} required />
           <button disabled={busy} className="cnx-btn shrink-0">
-            {busy ? "…" : t("addEvent")}
+            {busy ? <Spinner /> : t("addEvent")}
           </button>
         </div>
         {message && <p className="text-sm">{message}</p>}

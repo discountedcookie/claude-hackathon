@@ -1,5 +1,6 @@
 "use client";
 
+import Spinner, { AiWorking } from "./Spinner";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
@@ -115,7 +116,11 @@ export default function SignupChat({ transcript = [], draft: initialDraft = null
           {l.text}
         </p>
       ))}
-      {busy && !draft && <p className="w-14 animate-pulse rounded-2xl bg-cnx-pale px-4 py-2.5 text-center">…</p>}
+      {busy && !draft && (
+        <p className="w-fit rounded-2xl rounded-tl-sm bg-cnx-pale px-4 py-2.5">
+          <AiWorking label={t("thinking")} />
+        </p>
+      )}
 
       {!draft ? (
         <form onSubmit={send} className="flex gap-2">
@@ -194,7 +199,7 @@ export default function SignupChat({ transcript = [], draft: initialDraft = null
             </details>
           )}
           <button disabled={busy || !name.trim() || !line.trim() || langs.length === 0} className="cnx-btn w-full">
-            {busy ? "…" : t("onbFinish")}
+            {busy ? <Spinner /> : t("onbFinish")}
           </button>
         </form>
       )}

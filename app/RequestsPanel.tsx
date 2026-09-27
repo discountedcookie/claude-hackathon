@@ -1,5 +1,6 @@
 "use client";
 
+import { AiWorking } from "./Spinner";
 import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { useT } from "@/lib/i18n";
@@ -72,7 +73,7 @@ export default function RequestsPanel({
         ) : (
           <div className="flex gap-2">
             <button disabled={busy === r.id} onClick={() => respond(r.id, true)} className="cnx-btn flex-1 text-sm">
-              {busy === r.id ? "…" : t("accept")}
+              {busy === r.id ? <AiWorking label={t("preparingPlan")} /> : t("accept")}
             </button>
             <button disabled={busy === r.id} onClick={() => respond(r.id, false)} className="cnx-btn-light flex-1 text-sm text-cnx-muted">
               {t("decline")}

@@ -1,5 +1,6 @@
 "use client";
 
+import { AiWorking } from "./Spinner";
 import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { useLang, useT } from "@/lib/i18n";
@@ -129,7 +130,7 @@ export default function EventCard({
       {summary ? (
         <Clamp text={summary} className="text-[15px] leading-relaxed" />
       ) : (
-        <p className="animate-pulse text-sm text-cnx-muted">{t("summaryPending")}</p>
+        <AiWorking label={t("summaryPending")} />
       )}
 
       {ev.description_raw && (
@@ -204,7 +205,7 @@ export default function EventCard({
                     {asking === p.id && (
                       <form onSubmit={(e) => ask(e, p.id)} className="flex gap-2 pl-13">
                         <input
-                          className={`cnx-input text-sm ${drafting ? "animate-pulse" : ""}`}
+                          className="cnx-input text-sm"
                           placeholder={drafting ? t("drafting") : t("askPh")}
                           maxLength={200}
                           value={askNote}
@@ -214,6 +215,7 @@ export default function EventCard({
                         <button disabled={drafting} className="cnx-btn shrink-0 text-sm">{t("send")}</button>
                       </form>
                     )}
+                    {asking === p.id && drafting && <AiWorking label={t("drafting")} className="pl-13" />}
                     {asking === p.id && gloss && <p className="pl-13 text-xs text-cnx-muted">{gloss}</p>}
                   </li>
                 );

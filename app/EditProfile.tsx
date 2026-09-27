@@ -1,5 +1,6 @@
 "use client";
 
+import Spinner from "./Spinner";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Dialog } from "radix-ui";
@@ -66,7 +67,7 @@ export default function EditProfile({
             <div className="flex gap-2">
               <Dialog.Close className="cnx-btn-light flex-1">{t("cancel")}</Dialog.Close>
               <button disabled={busy || line === null} className="cnx-btn flex-1">
-                {busy ? "…" : t("save")}
+                {busy ? <Spinner /> : t("save")}
               </button>
             </div>
           </form>

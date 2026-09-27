@@ -1,5 +1,6 @@
 "use client";
 
+import Spinner, { AiWorking } from "./Spinner";
 import { useEffect, useRef, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { useLang, useT } from "@/lib/i18n";
@@ -114,7 +115,7 @@ export default function BuddyCard({
       {!over && (
         <dl className="space-y-2 text-sm">
           {introState === "loading" && !meet ? (
-            <p className="animate-pulse text-cnx-muted">{t("introLoading")}</p>
+            <AiWorking label={t("introLoading")} />
           ) : (
             <>
               <div className="flex gap-2">
@@ -200,13 +201,13 @@ export default function BuddyCard({
                   {copied ? t("copied") : t("copy")}
                 </button>
                 <button onClick={draftFollowUp} disabled={drafting} className="cnx-btn-light text-sm">
-                  {drafting ? "…" : t("redraft")}
+                  {drafting ? <Spinner /> : t("redraft")}
                 </button>
               </div>
             </div>
           ) : (
             <button onClick={draftFollowUp} disabled={drafting} className="cnx-btn-light w-full text-sm">
-              {drafting ? "…" : t("draftFollowUp")}
+              {drafting ? <AiWorking label={t("writingMessage")} /> : t("draftFollowUp")}
             </button>
           )}
         </div>

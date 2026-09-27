@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useLang, useT, type Lang } from "@/lib/i18n";
 import { scriptLang } from "@/lib/script";
+import Spinner from "./Spinner";
 
 type Kind = "note" | "hello" | "bio" | "mission";
 
@@ -66,9 +67,11 @@ export default function Written({ kind, id, text, className = "" }: { kind: Kind
   }, [needs, lang, kind, id, key]);
 
   const translated = needs && result?.key === key ? result.text : null;
+  const translating = needs && result?.key !== key;
   return (
     <span className={`${className}`}>
       {translated && !showOriginal ? translated : text}
+      {translating && <Spinner className="ml-1.5 inline h-3 w-3 align-[-1px] text-cnx-muted" />}
       {translated && (
         <button onClick={() => setShowOriginal((o) => !o)} className="ml-1.5 text-[11px] font-semibold text-cnx-muted underline">
           {showOriginal ? t(`lang_${lang}`) : t("original")}

@@ -1,5 +1,6 @@
 "use client";
 
+import { AiWorking } from "./Spinner";
 import { useCallback, useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { useLang, useT, Lang } from "@/lib/i18n";
@@ -302,7 +303,7 @@ export default function ProjectsBoard({ me }: { me: Profile }) {
             })()
           ) : (
             <button onClick={() => suggest(p.id)} disabled={suggesting === p.id} className="cnx-btn-light self-start text-sm">
-              {suggesting === p.id ? "…" : t("suggestPeople")}
+              {suggesting === p.id ? <AiWorking label={t("suggesting")} /> : t("suggestPeople")}
             </button>
           ))}
       </section>
@@ -337,7 +338,7 @@ export default function ProjectsBoard({ me }: { me: Profile }) {
             required
           />
           <button disabled={busy || text.trim().length < 10} className="cnx-btn w-full sm:w-auto">
-            {busy ? "…" : t("newProject")}
+            {busy ? <AiWorking label={t("writingListing")} /> : t("newProject")}
           </button>
           {formError && <p className="text-sm text-cnx-danger">{formError}</p>}
         </form>
