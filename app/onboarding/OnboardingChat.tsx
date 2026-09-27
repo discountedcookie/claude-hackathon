@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { createClient } from "@/lib/supabase/client";
 import { Lang, LangProvider, LangSwitcher, useT } from "@/lib/i18n";
 import BuddyMascot from "../BuddyMascot";
 import Icon from "../Icon";
@@ -51,10 +52,24 @@ function Chat({ transcript, turns }: { transcript: Line[]; turns: number }) {
   }
 
   return (
-    <main className="mx-auto flex min-h-screen max-w-lg flex-col gap-4 p-4 sm:p-6">
+    <main className="mx-auto w-full flex min-h-screen max-w-lg flex-col gap-4 p-4 sm:p-6">
       <header className="flex items-center justify-between">
         <h1 className="text-xl font-bold">{t("onbTitle")}</h1>
-        <LangSwitcher />
+        <div className="flex items-center gap-1">
+          <LangSwitcher />
+          <button
+            onClick={async () => {
+              await createClient().auth.signOut();
+              router.push("/login");
+              router.refresh();
+            }}
+            title={t("signOut")}
+            aria-label={t("signOut")}
+            className="rounded-lg p-2 text-cnx-muted hover:text-cnx-ink"
+          >
+            <Icon name="logout" className="h-5 w-5" />
+          </button>
+        </div>
       </header>
       <BuddyMascot className="mx-auto h-24 w-36" />
       <div className="flex-1 space-y-3">

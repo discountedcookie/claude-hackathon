@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useDateParts, useLang, useT, type Lang } from "@/lib/i18n";
 import Icon from "./Icon";
 
@@ -120,10 +120,26 @@ export function Avatar({ name, small = false }: { name: string; small?: boolean 
 export function Clamp({ text, className = "" }: { text: string; className?: string }) {
   const t = useT();
   const [open, setOpen] = useState(false);
+  const [overflows, setOverflows] = useState(false);
+  const ref = useRef<HTMLParagraphElement>(null);
+
+  // Measure instead of counting characters: Chinese fills 3 lines with far fewer characters than English.
+  useEffect(() => {
+    const el = ref.current;
+    if (!el || open) return;
+    const check = () => setOverflows(el.scrollHeight > el.clientHeight + 1);
+    check();
+    const ro = new ResizeObserver(check);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, [text, open]);
+
   return (
     <div className={className}>
-      <p className={`font-reading whitespace-pre-line ${open ? "" : "line-clamp-3"}`}>{text}</p>
-      {text.length > 160 && (
+      <p ref={ref} className={`font-reading whitespace-pre-line ${open ? "" : "line-clamp-3"}`}>
+        {text}
+      </p>
+      {(overflows || open) && (
         <button onClick={() => setOpen((o) => !o)} className="mt-1 text-xs font-semibold text-cnx-green">
           {open ? t("less") : t("more")}
         </button>

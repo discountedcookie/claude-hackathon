@@ -25,5 +25,5 @@ export async function proxy(request: NextRequest) {
 
 export const config = {
   // Skip static assets, images, icons and the public share page.
-  matcher: ["/((?!_next/static|_next/image|share/|sw.js|manifest.webmanifest|icon|apple-icon|.*\\.(?:png|jpg|svg|ico)$).*)"],
+  matcher: ["/((?!_next/static|_next/image|share/|maplibre/|sw.js|manifest.webmanifest|icon|apple-icon|.*\\.(?:png|jpg|svg|ico)$).*)"],
 };
