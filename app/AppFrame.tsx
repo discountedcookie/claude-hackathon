@@ -4,7 +4,10 @@ import { usePathname, useRouter } from "next/navigation";
 import Link from "next/link";
 import { ReactNode } from "react";
 import { createClient } from "@/lib/supabase/client";
+import { DropdownMenu } from "radix-ui";
 import Icon from "./Icon";
+import Logo from "./Logo";
+import { Avatar } from "./feed-types";
 import { LangProvider, LangSwitcher, useT, Lang } from "@/lib/i18n";
 
 type Profile = {
@@ -13,7 +16,7 @@ type Profile = {
   language: Lang;
 };
 
-function FrameInner({ children }: { children: ReactNode }) {
+function FrameInner({ me, children }: { me: Profile; children: ReactNode }) {
   const t = useT();
   const router = useRouter();
   const pathname = usePathname();
@@ -34,8 +37,8 @@ function FrameInner({ children }: { children: ReactNode }) {
     <div className="min-h-screen bg-cnx-paper text-cnx-ink">
       <header className="sticky top-0 z-10 border-b border-cnx-line bg-white/90 backdrop-blur">
         <div className="mx-auto flex max-w-5xl items-center gap-2 px-4 py-2.5 sm:gap-4 sm:px-6">
-          <Link href="/events" className="shrink-0 whitespace-nowrap text-lg font-extrabold tracking-tight">
-            With · CNX
+          <Link href="/events" className="shrink-0 text-lg" aria-label="With CNX">
+            <Logo />
           </Link>
           <nav className="flex items-center gap-1 sm:ml-4">
             {tabs.map(({ href, label }) => (
@@ -52,9 +55,24 @@ function FrameInner({ children }: { children: ReactNode }) {
           </nav>
           <div className="ml-auto flex items-center gap-1">
             <LangSwitcher />
-            <button onClick={signOut} title={t("signOut")} aria-label={t("signOut")} className="rounded-lg p-2 text-cnx-muted hover:text-cnx-ink">
-              <Icon name="logout" className="h-5 w-5" />
-            </button>
+            <DropdownMenu.Root>
+              <DropdownMenu.Trigger aria-label={me.display_name} className="rounded-full outline-offset-2">
+                <Avatar name={me.display_name} small />
+              </DropdownMenu.Trigger>
+              <DropdownMenu.Portal>
+                <DropdownMenu.Content align="end" sideOffset={8} className="z-30 min-w-44 rounded-2xl border border-cnx-line bg-white p-1.5 shadow-lg">
+                  <DropdownMenu.Label className="truncate px-3 py-2 text-sm font-semibold">{me.display_name}</DropdownMenu.Label>
+                  <DropdownMenu.Separator className="my-1 h-px bg-cnx-line" />
+                  <DropdownMenu.Item
+                    onSelect={signOut}
+                    className="flex cursor-pointer items-center gap-2 rounded-xl px-3 py-2 text-sm text-cnx-muted outline-none data-[highlighted]:bg-cnx-pale data-[highlighted]:text-cnx-ink"
+                  >
+                    <Icon name="logout" className="h-4 w-4" />
+                    {t("signOut")}
+                  </DropdownMenu.Item>
+                </DropdownMenu.Content>
+              </DropdownMenu.Portal>
+            </DropdownMenu.Root>
           </div>
         </div>
       </header>
@@ -66,7 +84,7 @@ function FrameInner({ children }: { children: ReactNode }) {
 export default function AppFrame({ me, children }: { me: Profile; children: ReactNode }) {
   return (
     <LangProvider initial={me.language} userId={me.id}>
-      <FrameInner>{children}</FrameInner>
+      <FrameInner me={me}>{children}</FrameInner>
     </LangProvider>
   );
 }
