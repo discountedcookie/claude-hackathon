@@ -1,15 +1,16 @@
 import { z } from "zod";
-import { AiBusy, askJson, data, LANG_NAMES, str } from "@/lib/claude";
+import { AiBusy, askJson, data, LANG_NAMES, list, str } from "@/lib/claude";
 import { strongestLanguage, type PersonForAI } from "@/lib/buddies";
 import { takeQuota } from "@/lib/supabase/admin";
 import { createClient, getUserId } from "@/lib/supabase/server";
 
-const Hello = z.object({
-  text: str(200).describe("The hello, in the recipient's language"),
-  gloss: str(200).describe("The same hello in the sender's language; empty if the languages are the same"),
+const Opener = z.object({
+  text: str(160).describe("The message, in the recipient's language"),
+  gloss: str(160).describe("The same message in the sender's language; empty if the languages are the same"),
 });
+const Openers = z.object({ options: list(Opener, 3) });
 
-// Drafts the first message of a buddy request in the other person's best language, so language isn't the barrier.
+// Suggests three first messages for a buddy request, in the other person's best language, so language isn't the barrier.
 export async function POST(request: Request) {
   const supabase = await createClient();
   const userId = await getUserId(supabase);
@@ -35,18 +36,21 @@ export async function POST(request: Request) {
   const myLang = LANG_NAMES[me.language as keyof typeof LANG_NAMES] ?? LANG_NAMES.en;
   try {
     const hello = await askJson({
-      system: `Write the first message one person sends another, asking to go to an event together. At most 2 short sentences, friendly and natural, like a text: say hi, and mention one specific thing you have in common or that the other person said. No "hope this finds you well", no exclamation-mark spam.
-Write text in the language with ISO code "${theirLang}". ${theirLang === me.language ? "Leave gloss empty." : `Write gloss as the same message in ${myLang}.`}`,
+      system: `Suggest three different first messages one person could send another, asking to go to an event together. Each is one or two short sentences, friendly and natural, like a text.
+Make them clearly different: one mentions something specific you have in common or that the other person said; one suggests meeting before it starts; one is short and simple. No "hope this finds you well", no exclamation-mark spam.
+Write each text in the language with ISO code "${theirLang}". ${theirLang === me.language ? "Leave gloss empty." : `Write each gloss as the same message in ${myLang}.`}`,
       prompt: [
         data("event", ev),
         data("person", { role: "sender", ...me, id: undefined, note: going?.find((g) => g.user_id === userId)?.note }),
         data("person", { role: "recipient", ...them, id: undefined, note: going?.find((g) => g.user_id === them.id)?.note }),
       ].join("\n"),
-      schema: Hello,
+      schema: Openers,
       effort: "low",
       maxTokens: 2000,
     });
-    return Response.json({ text: hello.text, gloss: theirLang === me.language ? "" : hello.gloss });
+    return Response.json({
+      options: hello.options.map((o) => ({ text: o.text, gloss: theirLang === me.language ? "" : o.gloss })),
+    });
   } catch (e) {
     if (e instanceof AiBusy) return Response.json({ error: "busy" }, { status: 503 });
     throw e;

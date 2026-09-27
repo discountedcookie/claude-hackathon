@@ -45,7 +45,7 @@ export default function EventCard({
   const [note, setNote] = useState("");
   const [asking, setAsking] = useState<string | null>(null);
   const [askNote, setAskNote] = useState("");
-  const [gloss, setGloss] = useState("");
+  const [openers, setOpeners] = useState<{ text: string; gloss: string }[]>([]);
   const [drafting, setDrafting] = useState(false);
   const [openSections, setOpenSections] = useState<string[]>([]);
   const [notice, setNotice] = useState<string | null>(null);
@@ -83,12 +83,12 @@ export default function EventCard({
     onChange();
   }
 
-  // "Ask" opens the message box with a hello Claude drafted in the other person's best language.
+  // "Ask" opens an empty message box with three openers Claude suggests in the other person's best language.
   async function openAsk(toId: string) {
     if (asking === toId) return setAsking(null);
     setAsking(toId);
     setAskNote("");
-    setGloss("");
+    setOpeners([]);
     setDrafting(true);
     const res = await fetch("/api/buddy/hello", {
       method: "POST",
@@ -97,10 +97,7 @@ export default function EventCard({
     }).catch(() => null);
     const body = res?.ok ? await res.json().catch(() => null) : null;
     setDrafting(false);
-    if (body?.text) {
-      setAskNote((current) => current || body.text);
-      setGloss(body.gloss ?? "");
-    }
+    if (body?.options) setOpeners(body.options);
   }
 
   async function ask(e: React.FormEvent, toId: string) {
@@ -113,7 +110,7 @@ export default function EventCard({
     if (error) fail(error.message);
     setAsking(null);
     setAskNote("");
-    setGloss("");
+    setOpeners([]);
     onChange();
   }
 
@@ -221,7 +218,24 @@ export default function EventCard({
                       </form>
                     )}
                     {asking === p.id && drafting && <AiWorking label={t("drafting")} className="pl-13" />}
-                    {asking === p.id && gloss && <p className="pl-13 text-xs text-cnx-muted">{gloss}</p>}
+                    {asking === p.id && openers.length > 0 && (
+                      <div className="flex flex-col items-start gap-1.5 pl-13">
+                        {openers.map((o) => (
+                          <button
+                            key={o.text}
+                            type="button"
+                            onClick={() => setAskNote(o.text)}
+                            aria-pressed={askNote === o.text}
+                            className={`max-w-full rounded-2xl border px-3 py-2 text-left text-sm transition ${
+                              askNote === o.text ? "border-cnx-green bg-cnx-pale" : "border-cnx-line bg-white hover:bg-cnx-pale"
+                            }`}
+                          >
+                            {o.text}
+                            {o.gloss && <span className="mt-0.5 block text-xs text-cnx-muted">{o.gloss}</span>}
+                          </button>
+                        ))}
+                      </div>
+                    )}
                   </li>
                 );
               })}
