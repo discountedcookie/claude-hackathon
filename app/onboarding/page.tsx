@@ -10,7 +10,7 @@ export default async function OnboardingPage() {
   const supabase = await createClient();
   const { data: session } = await supabase
     .from("onboarding_sessions")
-    .select("transcript, turns")
+    .select("transcript, turns, draft")
     .eq("user_id", profile.id)
     .maybeSingle();
 
@@ -18,7 +18,7 @@ export default async function OnboardingPage() {
     <OnboardingChat
       me={{ id: profile.id, language: profile.language }}
       transcript={session?.transcript ?? []}
-      turns={session?.turns ?? 0}
+      draft={session?.draft?.languages?.length && session.draft.display_name ? session.draft : null}
     />
   );
 }

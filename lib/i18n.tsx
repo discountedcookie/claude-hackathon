@@ -19,7 +19,7 @@ export const strings: Dict = {
   pasteLink: { en: "Add a lu.ma event", th: "เพิ่มงานจาก lu.ma", zh: "添加 lu.ma 活动" },
   addEvent: { en: "Add", th: "เพิ่ม", zh: "添加" },
   cancel: { en: "Cancel", th: "ยกเลิก", zh: "取消" },
-  counter: { en: "{n} matched", th: "จับคู่แล้ว {n} คู่", zh: "已配对 {n} 对" },
+  counter: { en: "{n} buddy pairs made so far", th: "จับคู่ไปด้วยกันแล้วทั้งหมด {n} คู่", zh: "目前已有 {n} 对伙伴成功配对" },
   dateTbd: { en: "date TBD", th: "ยังไม่ระบุวัน", zh: "日期待定" },
   venueTbd: { en: "venue TBD", th: "ยังไม่ระบุสถานที่", zh: "地点待定" },
   imGoing: { en: "I'm going", th: "ฉันจะไป", zh: "我要去" },
@@ -59,21 +59,13 @@ export const strings: Dict = {
   shareWaiting: { en: "Waiting for their location…", th: "กำลังรอตำแหน่ง…", zh: "正在等待位置……" },
   shareUpdated: { en: "updated {s}s ago", th: "อัปเดตเมื่อ {s} วินาทีที่แล้ว", zh: "{s} 秒前更新" },
   shareOf: { en: "{name} · {event}", th: "{name} · {event}", zh: "{name} · {event}" },
-  onbTitle: { en: "Let's get to know you", th: "มาทำความรู้จักกัน", zh: "认识一下你" },
-  onbHello: { en: "Hi! What should people call you, and which languages do you speak?", th: "สวัสดี! อยากให้เรียกคุณว่าอะไร และพูดภาษาอะไรได้บ้าง?", zh: "你好！大家怎么称呼你？你会说哪些语言？" },
-  onbPh: { en: "type your answer", th: "พิมพ์คำตอบ", zh: "输入你的回答" },
-  onbLeft: { en: "{n} left", th: "เหลือ {n}", zh: "还剩 {n}" },
-  onbDone: { en: "All set! Taking you to events…", th: "เรียบร้อย! กำลังพาไปดูงาน…", zh: "好了！正在带你去看活动……" },
+  onbHello: { en: "Tell us about yourself, in any language: your name, which languages you speak, and what you're into.", th: "เล่าเกี่ยวกับตัวคุณหน่อย เป็นภาษาอะไรก็ได้: ชื่อ ภาษาที่พูดได้ และสิ่งที่สนใจ", zh: "用任何语言介绍一下自己吧：你的名字、会说哪些语言、喜欢什么。" },
+  onbPh: { en: "e.g. I'm Mali, Thai native, a bit of English, into photography", th: "เช่น ชื่อมะลิ พูดไทย อังกฤษได้นิดหน่อย ชอบถ่ายรูป", zh: "例如：我叫小伟，母语中文，英语还行，喜欢摄影" },
   signIn: { en: "Sign in", th: "เข้าสู่ระบบ", zh: "登录" },
-  signUp: { en: "Create account", th: "สมัครสมาชิก", zh: "注册" },
-  needAccount: { en: "need an account?", th: "ยังไม่มีบัญชี?", zh: "还没有账号？" },
-  haveAccount: { en: "have one already?", th: "มีบัญชีแล้ว?", zh: "已有账号？" },
+  needAccount: { en: "New here? Start with a quick chat", th: "ยังไม่มีบัญชี? เริ่มคุยได้เลย", zh: "第一次来？先聊两句" },
   emailPh: { en: "email", th: "อีเมล", zh: "邮箱" },
   passwordPh: { en: "password", th: "รหัสผ่าน", zh: "密码" },
-  namePh: { en: "your name", th: "ชื่อของคุณ", zh: "你的名字" },
-  linePh: { en: "LINE ID", th: "LINE ID", zh: "LINE ID" },
   hello: { en: "Hi!", th: "สวัสดี!", zh: "你好！" },
-  checkEmail: { en: "Check your email to confirm your account, then sign in.", th: "กรุณายืนยันบัญชีทางอีเมล แล้วเข้าสู่ระบบ", zh: "请查收邮件确认账号，然后登录。" },
   lvl_basic: { en: "basic", th: "พื้นฐาน", zh: "入门" },
   lvl_conversational: { en: "conversational", th: "สื่อสารได้", zh: "能交流" },
   lvl_fluent: { en: "fluent", th: "คล่อง", zh: "流利" },
@@ -151,11 +143,37 @@ export const strings: Dict = {
   landTitle: { en: "Find an event, and someone to go with.", th: "หางานที่อยากไป และเพื่อนที่จะไปด้วยกัน", zh: "找个活动，再找个人一起去。" },
   landTag: { en: "ไปด้วยกัน · “let’s go together”", th: "ไปด้วยกัน · “let’s go together”", zh: "ไปด้วยกัน · “一起去吧”" },
   landSub: { en: "A buddy for your first community event in Chiang Mai, in English, Thai or Chinese.", th: "มีเพื่อนไปด้วยในงานคอมมูนิตี้ครั้งแรกที่เชียงใหม่ ใช้ได้ทั้งภาษาอังกฤษ ไทย และจีน", zh: "在清迈参加第一次社区活动时，有人陪你一起去。支持英文、泰文和中文。" },
-  landStart: { en: "Get started", th: "เริ่มเลย", zh: "开始使用" },
   landStep1: { en: "Find a free event near you", th: "หางานฟรีใกล้คุณ", zh: "找一个附近的免费活动" },
   landStep2: { en: "Ask someone who’s going", th: "ชวนคนที่จะไปงานเดียวกัน", zh: "邀请同样要去的人" },
   landStep3: { en: "Get each other’s LINE", th: "ได้ LINE ของกันและกัน", zh: "互换 LINE" },
   landStep4: { en: "Go together", th: "ไปด้วยกัน", zh: "一起去" },
+  onbConfirm: { en: "Is this you?", th: "ใช่คุณไหม?", zh: "这是你吗？" },
+  onbName: { en: "Name", th: "ชื่อ", zh: "名字" },
+  onbLanguages: { en: "Languages", th: "ภาษา", zh: "语言" },
+  onbInterests: { en: "Into", th: "สนใจ", zh: "兴趣" },
+  onbLine: { en: "Your LINE ID", th: "LINE ID ของคุณ", zh: "你的 LINE ID" },
+  onbLineHint: { en: "Only people you agree to go with see it.", th: "เห็นเฉพาะคนที่ตกลงไปด้วยกันแล้ว", zh: "只有你同意同行的人能看到。" },
+  onbEmailOptional: { en: "Add email & password to sign in on other devices (optional)", th: "เพิ่มอีเมลและรหัสผ่านเพื่อเข้าใช้จากเครื่องอื่น (ไม่บังคับ)", zh: "添加邮箱和密码，以便在其他设备登录（选填）" },
+  onbFinish: { en: "Done", th: "เสร็จแล้ว", zh: "完成" },
+  send: { en: "Send", th: "ส่ง", zh: "发送" },
+  lang_en: { en: "English", th: "English", zh: "English" },
+  lang_th: { en: "ไทย", th: "ไทย", zh: "ไทย" },
+  lang_zh: { en: "中文", th: "中文", zh: "中文" },
+  requestsTitle: { en: "Requests", th: "คำขอ", zh: "邀请" },
+  withdraw: { en: "Withdraw", th: "ยกเลิกคำขอ", zh: "撤回" },
+  noResults: { en: "No places found.", th: "ไม่พบสถานที่", zh: "没有找到地点" },
+  locationOff: { en: "Location is off. Allow location access for this site and try again.", th: "ตำแหน่งถูกปิดอยู่ อนุญาตการเข้าถึงตำแหน่งแล้วลองใหม่", zh: "定位已关闭。请允许此网站使用位置后重试。" },
+  confirmUngoing: { en: "This also cancels your plan for this event. Continue?", th: "การยกเลิกจะยกเลิกนัดของคุณในงานนี้ด้วย ดำเนินการต่อไหม?", zh: "这也会取消你在这个活动的约定。继续吗？" },
+  confirmCancelPlan: { en: "Cancel your plan with {name}?", th: "ยกเลิกนัดกับ {name} ไหม?", zh: "取消和 {name} 的约定吗？" },
+  confirmNoShow: { en: "Mark {name} as a no-show? This gives 1★ and can’t be undone.", th: "ระบุว่า {name} ไม่มา? จะให้ 1 ดาวและแก้ไขไม่ได้", zh: "标记 {name} 未到场？这会给 1 星且无法撤销。" },
+  confirmCloseProject: { en: "Close this project? People can no longer ask to join.", th: "ปิดโปรเจกต์นี้? คนอื่นจะขอเข้าร่วมไม่ได้อีก", zh: "关闭这个项目？别人将无法再申请加入。" },
+  introLoading: { en: "Preparing meeting tips…", th: "กำลังเตรียมเคล็ดลับการเจอกัน…", zh: "正在准备见面小贴士……" },
+  introFallback: { en: "At the entrance, 10 min before it starts", th: "ที่ทางเข้า 10 นาทีก่อนเริ่ม", zh: "入口处，开始前 10 分钟" },
+  redraft: { en: "New draft", th: "ร่างใหม่", zh: "重新起草" },
+  closed: { en: "Closed", th: "ปิดแล้ว", zh: "已关闭" },
+  noSuggestions: { en: "No one to suggest yet: go to an event with a buddy first.", th: "ยังไม่มีคนแนะนำ ลองไปงานกับเพื่อนก่อน", zh: "暂时没有推荐：先和伙伴去参加一次活动吧。" },
+  editProfile: { en: "Edit profile", th: "แก้ไขโปรไฟล์", zh: "编辑资料" },
+  profileSaved: { en: "Saved", th: "บันทึกแล้ว", zh: "已保存" },
 };
 
 const LangContext = createContext<{ lang: Lang; setLang: (l: Lang) => void; userId: string | null }>({
@@ -179,9 +197,6 @@ export function detectLang(): Lang | null {
   if (browser.startsWith("zh")) return "zh";
   return null;
 }
-
-// The first answer typed on the landing page, sent as the first onboarding message after sign-up.
-export const FIRST_MESSAGE_KEY = "cnx-first-message";
 
 export function LangProvider({
   initial,
@@ -213,7 +228,7 @@ export function useLang() {
 }
 
 const HTML_LANG: Record<Lang, string> = { en: "en", th: "th", zh: "zh-Hans" };
-const DATE_LOCALE: Record<Lang, string> = { en: "en-GB", th: "th-TH", zh: "zh-CN" };
+const DATE_LOCALE: Record<Lang, string> = { en: "en-US", th: "th-TH", zh: "zh-CN" };
 
 // t("key", { name: "Mali" }) fills {name}; word order lives in each translation, never in the JSX.
 export function useT() {

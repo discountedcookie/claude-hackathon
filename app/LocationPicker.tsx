@@ -28,26 +28,38 @@ export async function placeName(lat: number, lng: number, lang: Lang): Promise<s
 }
 
 // Fallback when browser location is denied: search a place (Photon geocoder) or tap the map.
+const CHIANG_MAI: Point = { lat: 18.7883, lng: 98.9853 };
+
 export default function LocationPicker({
   onPick,
   onLocate,
   onCancel,
+  near,
 }: {
   onPick: (p: Place) => void;
   onLocate: () => void;
   onCancel?: () => void;
+  near?: Point;
 }) {
   const t = useT();
   const { lang } = useLang();
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<Place[]>([]);
+  const [searched, setSearched] = useState(false);
   const [tapped, setTapped] = useState<Point | null>(null);
 
   async function search(e: React.FormEvent) {
     e.preventDefault();
     if (!query.trim()) return;
-    const res = await fetch(`https://photon.komoot.io/api/?q=${encodeURIComponent(query)}&limit=5`);
-    const body = (await res.json()) as { features: PhotonFeature[] };
+    setSearched(false);
+    // Bias results toward where the person is (or Chiang Mai), so "Nimman" finds Nimman, not Toronto.
+    const bias = near ?? CHIANG_MAI;
+    const body = await fetch(
+      `https://photon.komoot.io/api/?q=${encodeURIComponent(query)}&limit=5&lat=${bias.lat}&lon=${bias.lng}&location_bias_scale=0.5`,
+    )
+      .then((r) => r.json() as Promise<{ features: PhotonFeature[] }>)
+      .catch(() => ({ features: [] as PhotonFeature[] }));
+    setSearched(true);
     setResults(
       body.features.map((f) => ({
         lng: f.geometry.coordinates[0],
@@ -84,10 +96,11 @@ export default function LocationPicker({
           {r.label}
         </button>
       ))}
+      {searched && results.length === 0 && <p className="text-sm text-cnx-muted">{t("noResults")}</p>}
       <p className="text-xs text-cnx-muted">{t("locOrTap")}</p>
       <MapView
-        center={tapped ?? { lat: 18.7883, lng: 98.9853 }}
-        zoom={tapped ? 10 : 3}
+        center={tapped ?? near ?? CHIANG_MAI}
+        zoom={tapped || near ? 11 : 5}
         markers={tapped ? [{ point: tapped, color: "#285c48" }] : []}
         onPick={setTapped}
       />

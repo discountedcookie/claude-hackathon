@@ -2,13 +2,14 @@
 
 import { usePathname, useRouter } from "next/navigation";
 import Link from "next/link";
-import { ReactNode } from "react";
+import { ReactNode, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { DropdownMenu } from "radix-ui";
 import Icon from "./Icon";
 import Logo from "./Logo";
 import { Avatar } from "./feed-types";
-import { LangProvider, LangSwitcher, useT, Lang } from "@/lib/i18n";
+import { LangProvider, LangSwitcher, PICKED_LANG_KEY, useLang, useT, Lang } from "@/lib/i18n";
+import EditProfile from "./EditProfile";
 
 type Profile = {
   id: string;
@@ -20,9 +21,15 @@ function FrameInner({ me, children }: { me: Profile; children: ReactNode }) {
   const t = useT();
   const router = useRouter();
   const pathname = usePathname();
+  const { lang } = useLang();
   const supabase = createClient();
+  const [editing, setEditing] = useState(false);
 
   async function signOut() {
+    // The login page then opens in the language this person was using.
+    try {
+      localStorage.setItem(PICKED_LANG_KEY, lang);
+    } catch {}
     await supabase.auth.signOut();
     router.push("/login");
     router.refresh();
@@ -64,6 +71,12 @@ function FrameInner({ me, children }: { me: Profile; children: ReactNode }) {
                   <DropdownMenu.Label className="truncate px-3 py-2 text-sm font-semibold">{me.display_name}</DropdownMenu.Label>
                   <DropdownMenu.Separator className="my-1 h-px bg-cnx-line" />
                   <DropdownMenu.Item
+                    onSelect={() => setEditing(true)}
+                    className="flex cursor-pointer items-center gap-2 rounded-xl px-3 py-2 text-sm text-cnx-ink outline-none data-[highlighted]:bg-cnx-pale"
+                  >
+                    {t("editProfile")}
+                  </DropdownMenu.Item>
+                  <DropdownMenu.Item
                     onSelect={signOut}
                     className="flex cursor-pointer items-center gap-2 rounded-xl px-3 py-2 text-sm text-cnx-muted outline-none data-[highlighted]:bg-cnx-pale data-[highlighted]:text-cnx-ink"
                   >
@@ -73,6 +86,7 @@ function FrameInner({ me, children }: { me: Profile; children: ReactNode }) {
                 </DropdownMenu.Content>
               </DropdownMenu.Portal>
             </DropdownMenu.Root>
+            <EditProfile me={me} open={editing} onOpenChange={setEditing} />
           </div>
         </div>
       </header>

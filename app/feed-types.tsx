@@ -11,6 +11,7 @@ export type Person = {
   display_name: string;
   interests: string[];
   languages: LanguageSkill[];
+  bio?: string | null;
 };
 
 export type FeedEvent = {
@@ -42,10 +43,11 @@ export type BuddyRequest = {
   note: string | null;
   status: "pending" | "accepted" | "declined";
   icebreakers: Record<string, IntroCard> | null;
+  followups?: Record<string, { message_in_their_language: string; message_in_my_language: string }> | null;
   events: FeedEvent | null;
 };
 
-export type Attendance = { event_id: string; user_id: string; note: string | null; profiles: Person | null };
+export type Attendance = { id: string; event_id: string; user_id: string; note: string | null; profiles: Person | null };
 
 const DISPLAY_LOCALE: Record<Lang, string> = { en: "en", th: "th", zh: "zh-Hans" };
 
@@ -102,7 +104,10 @@ export function EventHeading({ ev }: { ev: FeedEvent }) {
 }
 
 export function Avatar({ name, small = false }: { name: string; small?: boolean }) {
-  const initials = [...name.trim()].slice(0, 2).join("").toUpperCase();
+  // Two Latin initials fit a tiny circle; wide scripts (Chinese, Thai) only fit one.
+  const chars = [...name.trim()];
+  const wide = /[\u0E00-\u0E7F\u3400-\u9FFF]/.test(chars[0] ?? "");
+  const initials = chars.slice(0, small && wide ? 1 : 2).join("").toUpperCase();
   return (
     <span
       className={`flex shrink-0 items-center justify-center rounded-full bg-cnx-pale font-semibold text-cnx-green ring-2 ring-white ${

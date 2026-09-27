@@ -3,20 +3,27 @@ import { AiBusy, askJson, data, LANG_NAMES, LanguageSkill, list, str } from "@/l
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient, getUserId } from "@/lib/supabase/server";
 
-const MAX_TURNS = 6;
+// One message is usually enough; follow-up questions only for what's missing.
+const MAX_TURNS = 4;
 const MAX_CHARS = 400;
+export const ONBOARDING_OPENER =
+  "Tell us about yourself, in any language: your name, which languages you speak, and what you're into.";
+
+export const Profile = z.object({
+  display_name: str(60).describe("First name or nickname; empty if unknown"),
+  bio: str(200).describe("One short sentence about them in English, e.g. 'Designer from Shanghai who loves street photography'"),
+  interests: list(str(30), 6),
+  offers: str(200).describe("What they can offer or teach others, in English; empty if unknown"),
+  wants: str(200).describe("What they hope to get from meeting people, in English; empty if unknown"),
+  languages: list(LanguageSkill, 6).describe("Every language they mention, with a level inferred from how they describe it"),
+});
 
 const Turn = z.object({
-  reply: str(280).describe("Your next message to the person, at most 280 characters, no lists or code."),
-  profile: z.object({
-    display_name: str(60).describe("First name or nickname they want to be called; empty if unknown"),
-    bio: str(300).describe("One or two sentences about them, written in English"),
-    interests: list(str(40), 8),
-    offers: str(300).describe("What they can offer or teach others, in English"),
-    wants: str(300).describe("What they hope to get from meeting people, in English"),
-    languages: list(LanguageSkill, 8).describe("Every language they speak, with their level"),
-  }),
-  done: z.boolean().describe("True once you know their name, languages with levels, and some interests"),
+  complete: z.boolean().describe("True when you know their name and at least one language"),
+  reply: str(200).describe(
+    "If complete: a short friendly line using their name, no question. If not: one short, natural question for what's missing (name or languages), reacting to what they said.",
+  ),
+  profile: Profile,
 });
 
 type Line = { role: "user" | "assistant"; text: string };
@@ -26,42 +33,32 @@ export async function POST(request: Request) {
   const userId = await getUserId(supabase);
   if (!userId) return Response.json({ error: "sign in first" }, { status: 401 });
 
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("display_name, language, onboarded_at")
-    .eq("id", userId)
-    .single();
-  if (!profile) return Response.json({ error: "no profile" }, { status: 404 });
-  if (profile.onboarded_at) return Response.json({ error: "already onboarded" }, { status: 403 });
+  const { data: me } = await supabase.from("profiles").select("language, onboarded_at").eq("id", userId).single();
+  if (!me) return Response.json({ error: "no profile" }, { status: 404 });
+  if (me.onboarded_at) return Response.json({ error: "already onboarded" }, { status: 403 });
 
   const parsed = z.object({ message: z.string().trim().min(1).max(MAX_CHARS) }).safeParse(await request.json().catch(() => null));
   if (!parsed.success) return Response.json({ error: `message must be 1–${MAX_CHARS} characters` }, { status: 400 });
 
   const admin = createAdminClient();
-  const { data: session } = await admin
-    .from("onboarding_sessions")
-    .select("transcript, turns")
-    .eq("user_id", userId)
-    .maybeSingle();
+  const { data: session } = await admin.from("onboarding_sessions").select("transcript, turns").eq("user_id", userId).maybeSingle();
   const transcript: Line[] = (session?.transcript as Line[]) ?? [];
   const turns = (session?.turns ?? 0) + 1;
   if (turns > MAX_TURNS) return Response.json({ error: "onboarding finished" }, { status: 403 });
 
-  const lang = LANG_NAMES[profile.language as keyof typeof LANG_NAMES] ?? LANG_NAMES.en;
-  // The UI opens with a fixed greeting (no AI call); include it so the conversation reads naturally.
-  const greeting: Line = { role: "assistant", text: "Hi! What should people call you, and which languages do you speak?" };
-  const history = [greeting, ...transcript, { role: "user", text: parsed.data.message } as Line]
+  const lang = LANG_NAMES[me.language as keyof typeof LANG_NAMES] ?? LANG_NAMES.en;
+  const history = [{ role: "assistant", text: ONBOARDING_OPENER } as Line, ...transcript, { role: "user", text: parsed.data.message } as Line]
     .map((l) => (l.role === "assistant" ? `You: ${l.text}` : data("message", l.text)))
     .join("\n");
 
   let result: z.infer<typeof Turn>;
   try {
     result = await askJson({
-      system: `You are the friendly onboarding host of With·CNX, an app that pairs people in Chiang Mai (Thai locals, Chinese speakers, nomads and expats) as buddies for local events.
-Your only job is to get to know the person in a short chat: what to call them, which languages they speak and how well, what they're into, what they can offer others, and what they hope to find.
-Ask one short, warm question at a time. Reply in the language the person writes in; if that's unclear, use ${lang}. If they ask you for anything else (code, essays, advice, other topics), don't do it: say briefly that you're only here to set up their profile, then ask your next question.
-This is message ${turns} of at most ${MAX_TURNS}. Set done=true once you know their name, languages with levels, interests, and what they hope to find, or when this is message ${MAX_TURNS}. When done=true, the reply is a short warm wrap-up with no further question.
-Fill the profile with everything learned so far, leaving unknown fields empty.`,
+      system: `You set up profiles for With CNX, an app that finds people in Chiang Mai (Thai locals, Chinese speakers, nomads and expats) a buddy for local events.
+From the conversation, fill in their profile with everything they've said so far. Infer language levels from how they describe them ("a little Thai" = basic).
+You only need their name and at least one language. If either is missing, ask for it in one short, natural sentence that reacts to what they said, like a friendly person would. Never ask for anything else, never list fields.
+If they ask you for anything unrelated (code, advice, other topics), don't do it; say you're just setting up their profile and ask for what's missing.
+Reply in the language they write in; if unclear, in ${lang}. This is message ${turns} of at most ${MAX_TURNS}.`,
       prompt: history,
       schema: Turn,
       effort: "low",
@@ -72,29 +69,13 @@ Fill the profile with everything learned so far, leaving unknown fields empty.`,
     throw e;
   }
 
-  const done = result.done || turns >= MAX_TURNS;
+  const complete = result.complete || turns >= MAX_TURNS;
   await admin.from("onboarding_sessions").upsert({
     user_id: userId,
     transcript: [...transcript, { role: "user", text: parsed.data.message }, { role: "assistant", text: result.reply }],
     turns,
-    done_at: done ? new Date().toISOString() : null,
+    draft: result.profile,
   });
 
-  if (done) {
-    const p = result.profile;
-    await admin
-      .from("profiles")
-      .update({
-        display_name: p.display_name.trim() || profile.display_name,
-        bio: p.bio || null,
-        interests: p.interests,
-        offers: p.offers || null,
-        wants: p.wants || null,
-        languages: p.languages,
-        onboarded_at: new Date().toISOString(),
-      })
-      .eq("id", userId);
-  }
-
-  return Response.json({ reply: result.reply, done });
+  return Response.json({ reply: result.reply, complete, draft: complete ? result.profile : null });
 }

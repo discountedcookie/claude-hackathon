@@ -24,6 +24,7 @@ export default function SafetyShare({ requestId }: { requestId: string }) {
   const [session, setSession] = useState<Session | null>(null);
   const [copied, setCopied] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [live, setLive] = useState(false);
   const stopRef = useRef<() => void>(() => {});
 
   useEffect(() => {
@@ -33,8 +34,11 @@ export default function SafetyShare({ requestId }: { requestId: string }) {
     let latest: GeolocationCoordinates | null = null;
     let wakeLock: WakeLockSentinel | null = null;
 
-    const send = () =>
-      latest && channel.send({ type: "broadcast", event: "pos", payload: { lat: latest.latitude, lng: latest.longitude, t: Date.now() } });
+    const send = () => {
+      if (!latest) return;
+      channel.send({ type: "broadcast", event: "pos", payload: { lat: latest.latitude, lng: latest.longitude, t: Date.now() } });
+      setLive(true);
+    };
     const lock = async () => {
       if (document.visibilityState === "visible" && "wakeLock" in navigator)
         wakeLock = await navigator.wakeLock.request("screen").catch(() => null);
@@ -47,7 +51,15 @@ export default function SafetyShare({ requestId }: { requestId: string }) {
         latest = p.coords;
         if (first) send();
       },
-      () => setError(t("somethingWrong")),
+      // Location lost or denied mid-share: end the session so the friend's page doesn't wait forever.
+      () => {
+        setError(t("locationOff"));
+        fetch("/api/share/end", {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({ session_id: session.id }),
+        }).finally(() => stopRef.current());
+      },
       { enableHighAccuracy: true },
     );
     const timer = setInterval(send, PING_MS);
@@ -64,6 +76,7 @@ export default function SafetyShare({ requestId }: { requestId: string }) {
       wakeLock?.release();
       supabase.removeChannel(channel);
       setSession(null);
+      setLive(false);
     };
     return () => {
       navigator.geolocation.clearWatch(watch);
@@ -77,12 +90,18 @@ export default function SafetyShare({ requestId }: { requestId: string }) {
 
   async function begin() {
     setError(null);
+    // Check location access first, so a link is only created when there's something to share.
+    const allowed = await new Promise<boolean>((resolve) => {
+      if (!("geolocation" in navigator)) return resolve(false);
+      navigator.geolocation.getCurrentPosition(() => resolve(true), () => resolve(false), { timeout: 15_000 });
+    });
+    if (!allowed) return setError(t("locationOff"));
     const res = await fetch("/api/share/start", {
       method: "POST",
       headers: { "content-type": "application/json" },
       body: JSON.stringify({ request_id: requestId }),
-    });
-    if (res.ok) setSession(await res.json());
+    }).catch(() => null);
+    if (res?.ok) setSession(await res.json());
     else setError(t("somethingWrong"));
   }
 
@@ -107,7 +126,7 @@ export default function SafetyShare({ requestId }: { requestId: string }) {
         </button>
       ) : (
         <>
-          <p className="font-semibold text-cnx-green">● {t("safetyLive")}</p>
+          <p className={`font-semibold ${live ? "text-cnx-green" : "animate-pulse text-cnx-muted"}`}>● {live ? t("safetyLive") : t("shareWaiting")}</p>
           <div className="flex gap-2">
             <button
               onClick={() => navigator.clipboard.writeText(link).then(() => setCopied(true))}

@@ -1,35 +1,23 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useEffect } from "react";
 import Link from "next/link";
-import { detectLang, FIRST_MESSAGE_KEY, LangProvider, LangSwitcher, useLang, useT } from "@/lib/i18n";
+import { detectLang, LangProvider, LangSwitcher, useLang, useT } from "@/lib/i18n";
 import BuddyMascot from "./BuddyMascot";
-import Icon from "./Icon";
 import Logo from "./Logo";
+import SignupChat from "./SignupChat";
 
 const STEPS = ["landStep1", "landStep2", "landStep3", "landStep4"] as const;
 
 function Page() {
   const t = useT();
-  const router = useRouter();
   const { setLang } = useLang();
-  const [answer, setAnswer] = useState("");
 
   useEffect(() => {
     const l = detectLang();
     if (l) setLang(l);
     // eslint-disable-next-line react-hooks/exhaustive-deps -- once on mount
   }, []);
-
-  // The first onboarding answer starts here; sign-up follows and the chat continues with it.
-  function start(e: React.FormEvent) {
-    e.preventDefault();
-    try {
-      if (answer.trim()) localStorage.setItem(FIRST_MESSAGE_KEY, answer.trim().slice(0, 400));
-    } catch {}
-    router.push("/login?mode=signup");
-  }
 
   return (
     <div className="min-h-screen bg-cnx-paper text-cnx-ink">
@@ -53,23 +41,10 @@ function Page() {
           </div>
 
           <div className="cnx-card space-y-4 sm:p-6">
-            <BuddyMascot className="mx-auto h-28 w-40" />
-            <p className="font-reading rounded-2xl rounded-tl-sm bg-cnx-pale px-4 py-3 text-[15px]">{t("onbHello")}</p>
-            <form onSubmit={start} className="flex gap-2">
-              <input
-                className="cnx-input"
-                placeholder={t("onbPh")}
-                maxLength={400}
-                value={answer}
-                onChange={(e) => setAnswer(e.target.value)}
-              />
-              <button className="cnx-btn shrink-0" aria-label={t("landStart")}>
-                <Icon name="send" className="h-5 w-5" />
-              </button>
-            </form>
-            <button onClick={start} className="cnx-btn w-full">
-              {t("landStart")}
-            </button>
+            <div className="flex justify-center">
+              <BuddyMascot className="h-24 w-36" />
+            </div>
+            <SignupChat />
           </div>
         </section>
 

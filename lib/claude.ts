@@ -57,14 +57,24 @@ export async function askJson<S extends z.ZodType>({
   if (!(await takeQuota("ai:global", "1 hour", limit))) throw new AiBusy("hourly cap");
 
   client ??= new Anthropic();
-  const res = await client.beta.messages.parse({
+  const first = await callOnce(system, prompt, schema, effort, maxTokens);
+  // Output is en/th/zh; a stray script (e.g. a Devanagari letter inside Thai) means a garbled answer: retry once.
+  if (!STRAY_SCRIPT.test(JSON.stringify(first))) return first;
+  if (!(await takeQuota("ai:global", "1 hour", limit))) return first;
+  return callOnce(system, prompt, schema, effort, maxTokens);
+}
+
+const STRAY_SCRIPT = /[\u0400-\u04FF\u0600-\u06FF\u0900-\u097F]/;
+
+async function callOnce<S extends z.ZodType>(system: string, prompt: string, schema: S, effort: string, maxTokens: number) {
+  const res = await client!.beta.messages.parse({
     model: MODEL,
     max_tokens: maxTokens,
     betas: ["server-side-fallback-2026-07-01"],
     fallbacks: "default",
     system: `${system}\n\n${DATA_RULE}`,
     messages: [{ role: "user", content: prompt }],
-    output_config: { effort, format: betaZodOutputFormat(schema) },
+    output_config: { effort: effort as "low" | "medium" | "high", format: betaZodOutputFormat(schema) },
   });
   if (res.stop_reason === "refusal" || res.parsed_output == null) throw new AiBusy("refused");
   return res.parsed_output as z.infer<S>;

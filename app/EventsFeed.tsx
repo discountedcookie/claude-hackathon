@@ -6,6 +6,7 @@ import { useLang, useT } from "@/lib/i18n";
 import Icon from "./Icon";
 import BuddyCard from "./BuddyCard";
 import EventCard from "./EventCard";
+import RequestsPanel from "./RequestsPanel";
 import { Faq } from "./ui";
 import LocationPicker, { placeName, type Place } from "./LocationPicker";
 import type { Review } from "./MatchReview";
@@ -15,7 +16,7 @@ const LOC_KEY = "cnx-location";
 
 type Feed = {
   events: FeedEvent[];
-  attendances: { event_id: string; user_id: string; note: string | null }[];
+  attendances: { id: string; event_id: string; user_id: string; note: string | null }[];
   requests: BuddyRequest[];
   people: Record<string, Person>;
   ratings: Record<string, { avg: number; count: number }>;
@@ -155,15 +156,15 @@ export default function EventsFeed({ meId }: { meId: string }) {
       method: "POST",
       headers: { "content-type": "application/json" },
       body: JSON.stringify({ url }),
-    });
-    const body = await res.json();
+    }).catch(() => null);
+    const body = res ? await res.json().catch(() => ({})) : {};
     const errors: Record<string, string> = {
       free_only: t("freeOnly"),
       private_or_unreadable: t("privateEvent"),
       rate_limited: t("rateLimited"),
     };
-    setMessage(res.ok ? `✓ ${body.event.title}` : (errors[body.error] ?? (res.status === 400 ? t("notLuma") : t("somethingWrong"))));
-    if (res.ok) setUrl("");
+    setMessage(res?.ok ? `✓ ${body.event.title}` : (errors[body.error] ?? (res?.status === 400 ? t("notLuma") : t("somethingWrong"))));
+    if (res?.ok) setUrl("");
     setBusy(false);
     load();
   }
@@ -185,10 +186,18 @@ export default function EventsFeed({ meId }: { meId: string }) {
         <Faq prefix="faqEv" count={6} />
       </div>
 
+      <RequestsPanel
+        requests={requests}
+        people={people}
+        meId={meId}
+        onChange={load}
+        onAccepted={() => setTimeout(() => document.getElementById("my-buddies")?.scrollIntoView({ behavior: "smooth" }), 600)}
+      />
+
       {accepted.length > 0 && (
-        <section className="space-y-3">
+        <section id="my-buddies" className="scroll-mt-20 space-y-3">
           <h2 className="text-lg font-bold">{t("myBuddies")}</h2>
-          <ul className="grid gap-4 md:grid-cols-2 [&>*]:min-w-0">
+          <ul className="grid items-start gap-4 md:grid-cols-2 [&>*]:min-w-0">
             {accepted.map((r) => {
               const other = people[otherId(r)];
               return other ? (
@@ -210,7 +219,7 @@ export default function EventsFeed({ meId }: { meId: string }) {
       )}
 
       {picking || !place ? (
-        picking && <LocationPicker onPick={choose} onLocate={locate} onCancel={place ? () => setPicking(false) : undefined} />
+        picking && <LocationPicker onPick={choose} onLocate={locate} onCancel={place ? () => setPicking(false) : undefined} near={place ?? undefined} />
       ) : (
         <section className="space-y-3">
           <div className="flex items-center justify-between gap-3">
@@ -232,7 +241,7 @@ export default function EventsFeed({ meId }: { meId: string }) {
           ) : (
             events.length === 0 && <p className="text-sm text-cnx-muted">{t("nothingYet")}</p>
           )}
-          <div className="grid gap-4 md:grid-cols-2 [&>*]:min-w-0">
+          <div className="grid items-start gap-4 md:grid-cols-2 [&>*]:min-w-0">
             {events.map((ev) => (
               <EventCard
                 key={ev.id}

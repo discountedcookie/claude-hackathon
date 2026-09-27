@@ -1,16 +1,18 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { useLang, useT } from "@/lib/i18n";
 import Icon from "./Icon";
 import MatchReview, { Rating, Review, Stars } from "./MatchReview";
 import SafetyShare, { shareWindowOpen } from "./SafetyShare";
 import { Avatar, EventHeading, LanguageChips, type BuddyRequest, type FeedEvent, type Person } from "./feed-types";
+import Written from "./Written";
 
 type FollowUp = { message_in_their_language: string; message_in_my_language: string };
 
-// What shows depends on where we are: before the event, during it (location sharing), after it (review, then message).
+// What shows depends on where we are. Contact, meeting point and openers stay until the event is over;
+// location sharing during its window; after it starts, the review, then the follow-up message.
 export default function BuddyCard({
   req,
   ev,
@@ -33,8 +35,9 @@ export default function BuddyCard({
   const t = useT();
   const { lang } = useLang();
   const supabase = createClient();
-  const [followUp, setFollowUp] = useState<FollowUp | null>(null);
+  const [draft, setDraft] = useState<FollowUp | null>(null);
   const [drafting, setDrafting] = useState(false);
+  const [introState, setIntroState] = useState<"idle" | "loading" | "failed">("idle");
   const [notice, setNotice] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
   const [now] = useState(() => Date.now());
@@ -43,14 +46,39 @@ export default function BuddyCard({
   const intro = stored?.[lang] ?? stored?.en ?? stored;
   const meet = intro?.meet ?? intro?.meet_suggestion;
   const openers = intro?.openers ?? intro?.icebreakers ?? [];
-  const started = !!ev.starts_at && new Date(ev.starts_at).getTime() < now;
+  const introCurrent = !!stored?.en && !!stored?.th && !!stored?.zh;
+  const start = ev.starts_at ? new Date(ev.starts_at).getTime() : null;
+  const end = start === null ? null : ev.ends_at ? new Date(ev.ends_at).getTime() : start + 4 * 3600_000;
+  const started = start !== null && start < now;
+  const over = end !== null && end < now;
   const canShare = !!ev.starts_at && shareWindowOpen(ev.starts_at, ev.ends_at, now);
   const myReview = reviews.find((r) => r.buddy_request_id === req.id && r.reviewer_id === meId);
   const theirReview = reviews.find((r) => r.buddy_request_id === req.id && r.reviewer_id === other.id);
   const lineUrl = line ? `https://line.me/ti/p/~${encodeURIComponent(line)}` : null;
+  const followUp = draft ?? req.followups?.[meId] ?? null;
+
+  // Intros that are missing (AI failed at accept time) or single-language (older rows) are filled in once.
+  const asked = useRef(false);
+  useEffect(() => {
+    if (introCurrent || over || asked.current) return;
+    asked.current = true;
+    setIntroState("loading");
+    fetch("/api/buddy/intro", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ request_id: req.id }),
+    })
+      .then((r) => {
+        setIntroState(r.ok ? "idle" : "failed");
+        if (r.ok) onChange();
+      })
+      .catch(() => setIntroState("failed"));
+  }, [introCurrent, over, req.id, onChange]);
 
   async function cancel() {
-    await supabase.from("buddy_requests").delete().eq("id", req.id);
+    if (!window.confirm(t("confirmCancelPlan", { name: other.display_name }))) return;
+    const { error } = await supabase.from("buddy_requests").delete().eq("id", req.id);
+    if (error) return setNotice(t("somethingWrong"));
     onChange();
   }
 
@@ -61,10 +89,10 @@ export default function BuddyCard({
       method: "POST",
       headers: { "content-type": "application/json" },
       body: JSON.stringify({ request_id: req.id }),
-    });
+    }).catch(() => null);
     setDrafting(false);
-    if (res.ok) setFollowUp(await res.json());
-    else setNotice(res.status === 429 ? t("rateLimited") : res.status === 503 ? t("busy") : t("somethingWrong"));
+    if (res?.ok) setDraft(await res.json());
+    else setNotice(res?.status === 429 ? t("rateLimited") : res?.status === 503 ? t("busy") : t("somethingWrong"));
   }
 
   return (
@@ -79,31 +107,52 @@ export default function BuddyCard({
             <Rating avg={rating?.avg} count={rating?.count} />
           </p>
           <LanguageChips languages={other.languages} />
+          {other.bio && <Written kind="bio" id={other.id} text={other.bio} className="mt-1 block text-sm text-cnx-muted" />}
         </div>
       </div>
 
-      {!started && (meet || openers.length > 0) && (
+      {!over && (
         <dl className="font-reading space-y-2 text-sm">
-          {meet && (
-            <div className="flex gap-2">
-              <dt className="shrink-0 font-semibold text-cnx-muted">{t("meetLabel")}</dt>
-              <dd>{meet}</dd>
-            </div>
-          )}
-          {openers.length > 0 && (
-            <div className="flex gap-2">
-              <dt className="shrink-0 font-semibold text-cnx-muted">{t("openersLabel")}</dt>
-              <dd>
-                <ul className="space-y-1">
-                  {openers.map((q) => (
-                    <li key={q}>“{q}”</li>
-                  ))}
-                </ul>
-              </dd>
-            </div>
+          {introState === "loading" && !meet ? (
+            <p className="animate-pulse text-cnx-muted">{t("introLoading")}</p>
+          ) : (
+            <>
+              <div className="flex gap-2">
+                <dt className="shrink-0 font-semibold text-cnx-muted">{t("meetLabel")}</dt>
+                <dd>{meet || t("introFallback")}</dd>
+              </div>
+              {openers.length > 0 && (
+                <div className="flex gap-2">
+                  <dt className="shrink-0 font-semibold text-cnx-muted">{t("openersLabel")}</dt>
+                  <dd>
+                    <ul className="space-y-1">
+                      {openers.map((q) => (
+                        <li key={q}>“{q}”</li>
+                      ))}
+                    </ul>
+                  </dd>
+                </div>
+              )}
+            </>
           )}
         </dl>
       )}
+
+      <div className="flex gap-2">
+        {lineUrl && (
+          <a href={lineUrl} target="_blank" className="cnx-btn min-w-0 flex-1 truncate text-sm">
+            LINE · {line}
+          </a>
+        )}
+        {!started && (
+          <a href={ev.luma_url} target="_blank" className="cnx-btn-light shrink-0 text-sm">
+            {t("registerOnLuma")}
+            <Icon name="external" className="h-4 w-4" />
+          </a>
+        )}
+      </div>
+
+      {canShare && <SafetyShare requestId={req.id} />}
 
       {started && !myReview && (
         <MatchReview
@@ -112,7 +161,7 @@ export default function BuddyCard({
           other={{ id: other.id, display_name: other.display_name }}
           onDone={() => {
             onChange();
-            draftFollowUp();
+            if (!followUp) draftFollowUp();
           }}
         />
       )}
@@ -135,7 +184,7 @@ export default function BuddyCard({
               {followUp.message_in_my_language && (
                 <p className="font-reading whitespace-pre-line text-xs text-cnx-muted">{followUp.message_in_my_language}</p>
               )}
-              <div className="flex gap-2">
+              <div className="flex flex-wrap gap-2">
                 <a
                   href={`https://line.me/R/share?text=${encodeURIComponent(followUp.message_in_their_language)}`}
                   target="_blank"
@@ -150,6 +199,9 @@ export default function BuddyCard({
                 >
                   {copied ? t("copied") : t("copy")}
                 </button>
+                <button onClick={draftFollowUp} disabled={drafting} className="cnx-btn-light text-sm">
+                  {drafting ? "…" : t("redraft")}
+                </button>
               </div>
             </div>
           ) : (
@@ -157,25 +209,10 @@ export default function BuddyCard({
               {drafting ? "…" : t("draftFollowUp")}
             </button>
           )}
-          {notice && <p className="text-xs text-cnx-danger">{notice}</p>}
         </div>
       )}
 
-      {!started && (
-        <div className="flex gap-2">
-          {lineUrl && (
-            <a href={lineUrl} target="_blank" className="cnx-btn min-w-0 flex-1 truncate text-sm">
-              LINE · {line}
-            </a>
-          )}
-          <a href={ev.luma_url} target="_blank" className="cnx-btn-light shrink-0 text-sm">
-            {t("registerOnLuma")}
-            <Icon name="external" className="h-4 w-4" />
-          </a>
-        </div>
-      )}
-
-      {canShare && <SafetyShare requestId={req.id} />}
+      {notice && <p className="text-xs text-cnx-danger">{notice}</p>}
 
       {!started && (
         <button onClick={cancel} className="mt-auto self-start text-xs text-cnx-muted underline">

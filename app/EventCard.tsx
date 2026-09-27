@@ -17,6 +17,7 @@ import {
   type LanguageSkill,
 } from "./feed-types";
 import { Section, Sections } from "./ui";
+import Written from "./Written";
 
 export default function EventCard({
   ev,
@@ -51,12 +52,13 @@ export default function EventCard({
   const summary = ev[`summary_${lang}`] ?? ev.summary_en;
   const facts = ev.facts?.[lang] ?? [];
   const foreignLanguage = !!ev.language && !myLanguages.some((l) => l.code === ev.language);
-  const incoming = requests.filter((r) => r.to_id === meId && r.status === "pending");
   const requestWith = (id: string) => requests.find((r) => r.from_id === id || r.to_id === id);
   const fail = (message?: string) => setNotice(message?.includes("rate_limited") ? t("rateLimited") : t("somethingWrong"));
 
   async function toggleGoing() {
     setNotice(null);
+    // Un-going cancels your plans for this event (DB trigger); make sure that's intended.
+    if (mine && requests.some((r) => r.status === "accepted") && !window.confirm(t("confirmUngoing"))) return;
     const { error } = mine
       ? await supabase.from("attendances").delete().eq("event_id", ev.id).eq("user_id", meId)
       : await supabase.from("attendances").insert({ event_id: ev.id });
@@ -64,14 +66,20 @@ export default function EventCard({
     onChange();
   }
 
-  async function saveNote() {
-    await supabase.from("attendances").update({ note: note.trim() || null }).eq("event_id", ev.id).eq("user_id", meId);
+  async function saveNote(e: React.FormEvent) {
+    e.preventDefault();
+    const { error } = await supabase.from("attendances").update({ note: note.trim() || null }).eq("event_id", ev.id).eq("user_id", meId);
+    if (error) return fail(error.message);
     setEditingNote(false);
     onChange();
   }
 
-  async function ask(toId: string) {
+  async function ask(e: React.FormEvent, toId: string) {
+    e.preventDefault();
     setNotice(null);
+    // A declined request can be sent again: the old one goes first (unique per pair and event).
+    const old = requestWith(toId);
+    if (old?.status === "declined") await supabase.from("buddy_requests").delete().eq("id", old.id);
     const { error } = await supabase.from("buddy_requests").insert({ event_id: ev.id, to_id: toId, note: askNote.trim() || null });
     if (error) fail(error.message);
     setAsking(null);
@@ -79,35 +87,8 @@ export default function EventCard({
     onChange();
   }
 
-  async function respond(id: string, accept: boolean) {
-    await fetch("/api/buddy/respond", {
-      method: "POST",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify({ request_id: id, accept }),
-    });
-    onChange();
-  }
-
   return (
     <section className="cnx-card flex flex-col gap-4">
-      {incoming.map((r) => {
-        const who = attendees.find((a) => a.user_id === r.from_id)?.profiles;
-        return (
-          <div key={r.id} className="space-y-2 rounded-2xl bg-cnx-lime/40 p-3 text-sm">
-            <p className="font-semibold">{t("wantsToGo", { name: who?.display_name ?? "…" })}</p>
-            {r.note && <p className="font-reading">“{r.note}”</p>}
-            <div className="flex gap-2">
-              <button onClick={() => respond(r.id, true)} className="cnx-btn flex-1 py-2 text-sm">
-                {t("accept")}
-              </button>
-              <button onClick={() => respond(r.id, false)} className="cnx-btn-light flex-1 text-sm text-cnx-muted">
-                {t("decline")}
-              </button>
-            </div>
-          </div>
-        );
-      })}
-
       <EventHeading ev={ev} />
 
       {(ev.language || facts.length > 0) && (
@@ -170,7 +151,7 @@ export default function EventCard({
                         </p>
                         <LanguageChips languages={p.languages} />
                       </div>
-                      {r ? (
+                      {r && r.status !== "declined" ? (
                         <span className="cnx-tag shrink-0">{t(r.status)}</span>
                       ) : (
                         mine && (
@@ -180,9 +161,10 @@ export default function EventCard({
                         )
                       )}
                     </div>
-                    {a.note && <p className="font-reading pl-13 text-cnx-muted">“{a.note}”</p>}
+                    {p.bio && <Written kind="bio" id={p.id} text={p.bio} className="block pl-13 text-sm text-cnx-muted" />}
+                    {a.note && <Written kind="note" id={a.id} text={`“${a.note}”`} className="block pl-13 text-sm" />}
                     {asking === p.id && (
-                      <div className="flex gap-2 pl-13">
+                      <form onSubmit={(e) => ask(e, p.id)} className="flex gap-2 pl-13">
                         <input
                           className="cnx-input text-sm"
                           placeholder={t("askPh")}
@@ -191,10 +173,8 @@ export default function EventCard({
                           onChange={(e) => setAskNote(e.target.value)}
                           autoFocus
                         />
-                        <button onClick={() => ask(p.id)} className="cnx-btn shrink-0 text-sm">
-                          {t("ask")}
-                        </button>
-                      </div>
+                        <button className="cnx-btn shrink-0 text-sm">{t("ask")}</button>
+                      </form>
                     )}
                   </li>
                 );
@@ -207,7 +187,7 @@ export default function EventCard({
       <div className="mt-auto flex flex-wrap items-center justify-between gap-3">
         {mine &&
           (editingNote ? (
-            <div className="flex w-full gap-2">
+            <form onSubmit={saveNote} className="flex w-full gap-2">
               <input
                 className="cnx-input text-sm"
                 placeholder={t("whyGoingPh")}
@@ -216,10 +196,8 @@ export default function EventCard({
                 onChange={(e) => setNote(e.target.value)}
                 autoFocus
               />
-              <button onClick={saveNote} className="cnx-btn shrink-0 text-sm">
-                {t("save")}
-              </button>
-            </div>
+              <button className="cnx-btn shrink-0 text-sm">{t("save")}</button>
+            </form>
           ) : (
             <button
               onClick={() => {

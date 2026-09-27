@@ -7,6 +7,7 @@ import { Rating } from "./MatchReview";
 import type { Review } from "./MatchReview";
 import { Clamp } from "./feed-types";
 import { Faq } from "./ui";
+import Written from "./Written";
 
 type Profile = { id: string; display_name: string };
 type Project = {
@@ -131,11 +132,18 @@ export default function ProjectsBoard({ me }: { me: Profile }) {
     load();
   }
 
-  async function requestJoin(projectId: string) {
-    await supabase
-      .from("project_requests")
-      .insert({ project_id: projectId, requester_id: me.id, mission: missionByProject[projectId] || null });
+  async function act(query: PromiseLike<{ error: unknown }>) {
+    setFormError(null);
+    const { error } = await query;
+    if (error) setFormError(t("somethingWrong"));
     load();
+  }
+
+  async function requestJoin(e: React.FormEvent, projectId: string) {
+    e.preventDefault();
+    await act(
+      supabase.from("project_requests").insert({ project_id: projectId, requester_id: me.id, mission: missionByProject[projectId] || null }),
+    );
   }
 
   async function suggest(projectId: string) {
@@ -144,27 +152,25 @@ export default function ProjectsBoard({ me }: { me: Profile }) {
       method: "POST",
       headers: { "content-type": "application/json" },
       body: JSON.stringify({ project_id: projectId }),
-    });
-    if (res.ok) {
+    }).catch(() => null);
+    if (res?.ok) {
       const { suggestions } = await res.json();
       setProjects((ps) => ps.map((p) => (p.id === projectId ? { ...p, suggestions } : p)));
-    }
+    } else setFormError(res?.status === 429 ? t("rateLimited") : res?.status === 503 ? t("busy") : t("somethingWrong"));
     setSuggesting(null);
   }
 
   async function setRequestStatus(id: string, status: "accepted" | "declined") {
-    await supabase.from("project_requests").update({ status }).eq("id", id);
-    load();
+    await act(supabase.from("project_requests").update({ status }).eq("id", id));
   }
 
   async function cancelRequest(id: string) {
-    await supabase.from("project_requests").delete().eq("id", id);
-    load();
+    await act(supabase.from("project_requests").delete().eq("id", id));
   }
 
   async function closeProject(id: string) {
-    await supabase.from("projects").update({ status: "closed" }).eq("id", id);
-    load();
+    if (!window.confirm(t("confirmCloseProject"))) return;
+    await act(supabase.from("projects").update({ status: "closed" }).eq("id", id));
   }
 
   const open = projects.filter((p) => p.status === "open");
@@ -195,27 +201,37 @@ export default function ProjectsBoard({ me }: { me: Profile }) {
               {t("closeProject")}
             </button>
           )}
+          {p.status === "closed" && <span className="cnx-tag shrink-0">{t("closed")}</span>}
         </div>
 
         {description && <Clamp text={description} className="text-[15px] leading-relaxed" />}
         {lookingFor && <p className="text-sm text-cnx-muted">→ {lookingFor}</p>}
 
         {accepted.length > 0 && (isOwner || myReq?.status === "accepted") && (
-          <p className="text-sm">
-            <span className="font-semibold">{t("teamLine")}</span>{" "}
-            {accepted.map((r) => `${r.profiles?.display_name} · LINE ${lines[r.requester_id] ?? t("noLine")}`).join(", ")}
-          </p>
+          <div className="space-y-1 text-sm">
+            <p className="font-semibold">{t("teamLine")}</p>
+            <ul className="flex flex-wrap gap-2">
+              {[{ id: p.owner_id, name: p.profiles?.display_name }, ...accepted.map((r) => ({ id: r.requester_id, name: r.profiles?.display_name }))]
+                .filter((m) => m.id !== me.id)
+                .map((m) => (
+                  <li key={m.id}>
+                    {lines[m.id] ? (
+                      <a href={`https://line.me/ti/p/~${encodeURIComponent(lines[m.id])}`} target="_blank" className="cnx-btn-light px-3 py-1 text-xs">
+                        {m.name} · LINE {lines[m.id]}
+                      </a>
+                    ) : (
+                      <span className="cnx-tag">{m.name}</span>
+                    )}
+                  </li>
+                ))}
+            </ul>
+          </div>
         )}
 
         {!isOwner && p.status === "open" &&
           (myReq ? (
             <div className="flex items-center justify-between gap-2 text-sm">
               <span className="cnx-tag">{t(myReq.status)}</span>
-              {myReq.status === "accepted" && (
-                <span>
-                  {p.profiles?.display_name} · LINE <b>{lines[p.owner_id] ?? t("noLine")}</b>
-                </span>
-              )}
               {myReq.status === "pending" && (
                 <button onClick={() => cancelRequest(myReq.id)} className="text-xs text-cnx-muted underline">
                   {t("cancel")}
@@ -223,7 +239,7 @@ export default function ProjectsBoard({ me }: { me: Profile }) {
               )}
             </div>
           ) : (
-            <div className="mt-auto flex gap-2">
+            <form onSubmit={(e) => requestJoin(e, p.id)} className="mt-auto flex gap-2">
               <input
                 className="cnx-input text-sm"
                 placeholder={t("requestMissionPh")}
@@ -231,10 +247,8 @@ export default function ProjectsBoard({ me }: { me: Profile }) {
                 value={missionByProject[p.id] ?? ""}
                 onChange={(e) => setMissionByProject((s) => ({ ...s, [p.id]: e.target.value }))}
               />
-              <button onClick={() => requestJoin(p.id)} className="cnx-btn shrink-0 text-sm">
-                {t("requestJoin")}
-              </button>
-            </div>
+              <button className="cnx-btn shrink-0 text-sm">{t("requestJoin")}</button>
+            </form>
           ))}
 
         {isOwner && projectRequests.length > 0 && (
@@ -246,7 +260,7 @@ export default function ProjectsBoard({ me }: { me: Profile }) {
                   <span className="min-w-0">
                     <b>{r.profiles?.display_name}</b>
                     <Rating avg={ratings[r.profiles?.id ?? ""]?.avg} count={ratings[r.profiles?.id ?? ""]?.count} />
-                    {r.mission && <span className="font-reading block text-cnx-muted">“{r.mission}”</span>}
+                    {r.mission && <Written kind="mission" id={r.id} text={`“${r.mission}”`} className="block text-cnx-muted" />}
                   </span>
                   {r.status === "pending" ? (
                     <span className="flex shrink-0 gap-1">
@@ -268,18 +282,24 @@ export default function ProjectsBoard({ me }: { me: Profile }) {
 
         {isOwner && p.status === "open" &&
           (p.suggestions ? (
-            p.suggestions.length > 0 && (
+            // People who already asked or joined aren't suggestions any more.
+            (() => {
+              const fresh = p.suggestions.filter((s) => !projectRequests.some((r) => r.requester_id === s.user_id));
+              return fresh.length === 0 ? (
+                <p className="text-sm text-cnx-muted">{t("noSuggestions")}</p>
+              ) : (
               <div className="space-y-1">
                 <h4 className="text-xs font-semibold text-cnx-muted">{t("suggested")}</h4>
                 <ul className="space-y-1 text-sm">
-                  {p.suggestions.map((s) => (
+                  {fresh.map((s) => (
                     <li key={s.user_id}>
                       <b>{s.display_name}</b> <span className="text-cnx-muted">· {s[`reason_${lang}`] ?? s.reason_en}</span>
                     </li>
                   ))}
                 </ul>
               </div>
-            )
+              );
+            })()
           ) : (
             <button onClick={() => suggest(p.id)} disabled={suggesting === p.id} className="cnx-btn-light self-start text-sm">
               {suggesting === p.id ? "…" : t("suggestPeople")}
@@ -289,7 +309,8 @@ export default function ProjectsBoard({ me }: { me: Profile }) {
     );
   }
 
-  const others = open.filter((p) => p.owner_id !== me.id);
+  const joinedIds = new Set(myAccepted.map((r) => r.project_id));
+  const others = open.filter((p) => p.owner_id !== me.id && !joinedIds.has(p.id));
 
   return (
     <main className="mx-auto w-full max-w-5xl space-y-8 p-4 sm:p-6">
@@ -302,6 +323,7 @@ export default function ProjectsBoard({ me }: { me: Profile }) {
         </button>
         <Faq prefix="faqPr" count={4} />
       </div>
+      {formError && !showForm && <p className="text-sm text-cnx-danger">{formError}</p>}
 
       {showForm && (
         <form onSubmit={createProject} className="cnx-card space-y-2">

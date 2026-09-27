@@ -57,6 +57,7 @@ function Live({ token, session }: { token: string; session: Session | null }) {
             <MapView
               key={pos ? "live" : "venue"}
               center={pos ?? venue!}
+              follow
               zoom={15}
               className="h-[60vh]"
               markers={[
