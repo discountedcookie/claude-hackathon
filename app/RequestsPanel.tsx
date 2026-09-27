@@ -64,7 +64,7 @@ export default function RequestsPanel({
         {r.note && <Written kind="hello" id={r.id} text={`“${r.note}”`} className="block text-sm" />}
         {mine ? (
           <div className="flex items-center justify-between">
-            <span className="cnx-tag">{t("pending")}</span>
+            <span className="text-xs text-cnx-muted">{t("waitingFor", { name: p?.display_name ?? "…" })}</span>
             <button disabled={busy === r.id} onClick={() => withdraw(r.id)} className="text-sm text-cnx-muted underline">
               {t("withdraw")}
             </button>

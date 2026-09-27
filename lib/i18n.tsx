@@ -109,7 +109,7 @@ export const strings: Dict = {
   howItWorks: { en: "How it works", th: "ใช้งานอย่างไร", zh: "怎么用" },
   close: { en: "Close", th: "ปิด", zh: "关闭" },
   faqEvQ1: { en: "How do I find a buddy?", th: "หาเพื่อนไปงานได้อย่างไร?", zh: "怎么找到伙伴？" },
-  faqEvA1: { en: "Tap “I'm going” on an event to see who else is going. Ask someone to go together. When they accept, you both see each other's LINE.", th: "กด “ฉันจะไป” ที่งานที่สนใจ แล้วจะเห็นว่ามีใครจะไปบ้าง ชวนใครสักคนไปด้วยกัน เมื่อเขาตอบรับ ทั้งสองคนจะเห็น LINE ของกันและกัน", zh: "在活动上点“我要去”，就能看到还有谁要去。邀请一个人一起去，对方接受后，你们就能看到彼此的 LINE。" },
+  faqEvA1: { en: "Tap “I'm going” on an event, then “Ask” someone who's going. We draft a hello in their language for you. When they accept, you both get each other's LINE, where to meet and a couple of things to talk about.", th: "กด “ฉันจะไป” แล้วกด “ชวน” คนที่จะไปงานเดียวกัน เราจะร่างคำทักทายเป็นภาษาของเขาให้ เมื่อเขาตอบรับ ทั้งสองคนจะได้ LINE ของกันและกัน จุดนัดเจอ และเรื่องชวนคุย", zh: "在活动上点“我要去”，再点“邀请”一个也要去的人。我们会用对方的语言帮你写好问候。对方接受后，你们会看到彼此的 LINE、见面地点和几个聊天话题。" },
   faqEvQ2: { en: "Do I still need to register?", th: "ยังต้องลงทะเบียนเองไหม?", zh: "还需要自己报名吗？" },
   faqEvA2: { en: "Yes. Register on the event's Luma page yourself. We only help you find someone to go with.", th: "ต้องลงทะเบียนเองในหน้า Luma ของงาน เราแค่ช่วยหาเพื่อนไปด้วยกัน", zh: "需要。请在活动的 Luma 页面自己报名，我们只帮你找同行的伙伴。" },
   faqEvQ3: { en: "Who can see my LINE ID?", th: "ใครเห็น LINE ID ของฉันบ้าง?", zh: "谁能看到我的 LINE ID？" },
@@ -175,6 +175,10 @@ export const strings: Dict = {
   editProfile: { en: "Edit profile", th: "แก้ไขโปรไฟล์", zh: "编辑资料" },
   profileSaved: { en: "Saved", th: "บันทึกแล้ว", zh: "已保存" },
   voice: { en: "Speak", th: "พูด", zh: "语音输入" },
+  whyGoing: { en: "Why I'm going:", th: "ไปเพราะ:", zh: "参加原因：" },
+  waitingFor: { en: "Waiting for {name} to accept. Then you'll both get each other's LINE and tips for meeting.", th: "รอ {name} ตอบรับ แล้วทั้งคู่จะได้ LINE ของกันและกัน พร้อมเคล็ดลับการเจอกัน", zh: "等待 {name} 接受。之后你们会看到彼此的 LINE 和见面小贴士。" },
+  drafting: { en: "Writing a hello in their language…", th: "กำลังเขียนคำทักทายเป็นภาษาของเขา…", zh: "正在用对方的语言写问候……" },
+  askNudge: { en: "Ask someone to go with you", th: "ชวนใครสักคนไปด้วยกัน", zh: "邀请一个人一起去" },
 };
 
 const LangContext = createContext<{ lang: Lang; setLang: (l: Lang) => void; userId: string | null }>({

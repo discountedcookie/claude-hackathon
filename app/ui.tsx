@@ -6,9 +6,25 @@ import { useT } from "@/lib/i18n";
 import Icon from "./Icon";
 
 // Collapsible sections inside a card: one line each until opened.
-export function Sections({ children, defaultValue = [] }: { children: ReactNode; defaultValue?: string[] }) {
+export function Sections({
+  children,
+  defaultValue,
+  value,
+  onValueChange,
+}: {
+  children: ReactNode;
+  defaultValue?: string[];
+  value?: string[];
+  onValueChange?: (value: string[]) => void;
+}) {
   return (
-    <Accordion.Root type="multiple" defaultValue={defaultValue} className="divide-y divide-cnx-line border-t border-cnx-line">
+    <Accordion.Root
+      type="multiple"
+      defaultValue={defaultValue}
+      value={value}
+      onValueChange={onValueChange}
+      className="divide-y divide-cnx-line border-t border-cnx-line"
+    >
       {children}
     </Accordion.Root>
   );

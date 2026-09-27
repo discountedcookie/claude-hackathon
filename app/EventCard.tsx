@@ -44,6 +44,9 @@ export default function EventCard({
   const [note, setNote] = useState("");
   const [asking, setAsking] = useState<string | null>(null);
   const [askNote, setAskNote] = useState("");
+  const [gloss, setGloss] = useState("");
+  const [drafting, setDrafting] = useState(false);
+  const [openSections, setOpenSections] = useState<string[]>([]);
   const [notice, setNotice] = useState<string | null>(null);
   const [showOriginal, setShowOriginal] = useState(false);
 
@@ -74,6 +77,26 @@ export default function EventCard({
     onChange();
   }
 
+  // "Ask" opens the message box with a hello Claude drafted in the other person's best language.
+  async function openAsk(toId: string) {
+    if (asking === toId) return setAsking(null);
+    setAsking(toId);
+    setAskNote("");
+    setGloss("");
+    setDrafting(true);
+    const res = await fetch("/api/buddy/hello", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ event_id: ev.id, to_id: toId }),
+    }).catch(() => null);
+    const body = res?.ok ? await res.json().catch(() => null) : null;
+    setDrafting(false);
+    if (body?.text) {
+      setAskNote((current) => current || body.text);
+      setGloss(body.gloss ?? "");
+    }
+  }
+
   async function ask(e: React.FormEvent, toId: string) {
     e.preventDefault();
     setNotice(null);
@@ -84,6 +107,7 @@ export default function EventCard({
     if (error) fail(error.message);
     setAsking(null);
     setAskNote("");
+    setGloss("");
     onChange();
   }
 
@@ -121,8 +145,14 @@ export default function EventCard({
         </div>
       )}
 
+      {mine && others.length > 0 && !requests.some((r) => r.from_id === meId) && !openSections.includes("people") && (
+        <button onClick={() => setOpenSections(["people"])} className="self-start text-sm font-semibold text-cnx-green underline">
+          {t("askNudge")} ↓
+        </button>
+      )}
+
       {others.length > 0 && (
-        <Sections>
+        <Sections value={openSections} onValueChange={setOpenSections}>
           <Section
             value="people"
             title={
@@ -155,27 +185,36 @@ export default function EventCard({
                         <span className="cnx-tag shrink-0">{t(r.status)}</span>
                       ) : (
                         mine && (
-                          <button onClick={() => setAsking(asking === p.id ? null : p.id)} className="cnx-btn-light shrink-0 px-3 py-1.5 text-xs">
+                          <button onClick={() => openAsk(p.id)} className="cnx-btn-light shrink-0 px-3 py-1.5 text-xs">
                             {t("ask")}
                           </button>
                         )
                       )}
                     </div>
                     {p.bio && <Written kind="bio" id={p.id} text={p.bio} className="block pl-13 text-sm text-cnx-muted" />}
-                    {a.note && <Written kind="note" id={a.id} text={`“${a.note}”`} className="block pl-13 text-sm" />}
+                    {a.note && (
+                      <p className="pl-13 text-sm">
+                        <span className="text-xs font-semibold text-cnx-muted">{t("whyGoing")} </span>
+                        <Written kind="note" id={a.id} text={a.note} />
+                      </p>
+                    )}
+                    {r?.status === "pending" && r.from_id === meId && (
+                      <p className="pl-13 text-xs text-cnx-muted">{t("waitingFor", { name: p.display_name })}</p>
+                    )}
                     {asking === p.id && (
                       <form onSubmit={(e) => ask(e, p.id)} className="flex gap-2 pl-13">
                         <input
-                          className="cnx-input text-sm"
-                          placeholder={t("askPh")}
+                          className={`cnx-input text-sm ${drafting ? "animate-pulse" : ""}`}
+                          placeholder={drafting ? t("drafting") : t("askPh")}
                           maxLength={200}
                           value={askNote}
                           onChange={(e) => setAskNote(e.target.value)}
                           autoFocus
                         />
-                        <button className="cnx-btn shrink-0 text-sm">{t("ask")}</button>
+                        <button disabled={drafting} className="cnx-btn shrink-0 text-sm">{t("send")}</button>
                       </form>
                     )}
+                    {asking === p.id && gloss && <p className="pl-13 text-xs text-cnx-muted">{gloss}</p>}
                   </li>
                 );
               })}
